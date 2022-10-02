@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace pharmacity_v1.Controllers;
+namespace pharmacity_v1.controllers;
 
 [ApiController]
 [Route("[controller]")]
