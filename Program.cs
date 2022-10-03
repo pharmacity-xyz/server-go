@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,3 +25,18 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+record Note(int id)
+{
+    public string text { get; set; } = default!;
+    public bool done { get; set; } = default!;
+}
+
+class NoteDb : DbContext
+{
+    public NoteDb(DbContextOptions<NoteDb> options) : base(options)
+    {
+
+    }
+    public DbSet<Note> Notes => Set<Note>();
+}
