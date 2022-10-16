@@ -18,11 +18,20 @@ func (m *myStruct) printFirstName() string {
 }
 
 func main() {
-	myNum := 100
-	isTrue := false
+	myVar := "hello"
 
-	if myNum > 99 && !isTrue {
-		log.Println("myNum is greater than 99 and isTrue is set to true")
+	switch myVar {
+	case "cat":
+		log.Println("cat")
+
+	case "dog":
+		log.Println("dog")
+
+	case "fish":
+		log.Println("fish")
+
+	default:
+		log.Println("does not match")
 	}
 }
 
