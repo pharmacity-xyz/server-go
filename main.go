@@ -22,15 +22,18 @@ func (m *myStruct) printFirstName() string {
 }
 
 func main() {
-	var myVar myStruct
-	myVar.FirstName = "John"
+	// var myString string
+	//	var myInt int
+	//
+	//	myString = "Hi"
+	//	myInt = 11
 
-	myVar2 := myStruct{
-		FirstName: "Mary",
-	}
+	myMap := make(map[string]string)
 
-	log.Println("myVar", myVar.printFirstName())
-	log.Println("myVar2", myVar2.printFirstName())
+	myMap["dog"] = "Samson"
+
+	log.Println(myMap["dog"])
+
 }
 
 func saySomething(s string) (string, string) {
