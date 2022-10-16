@@ -1,28 +1,41 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
-
-	"github.com/pharmacity-xyz/server/helpers"
 )
 
-const numPool = 10
-
-func CalculateValue(intChan chan int) {
-	randomNumber := helpers.RandomNumber(numPool)
-	intChan <- randomNumber
+type Person struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	HairColor string `json:"hair_color"`
+	HasDog    bool   `json:"has_dog"`
 }
 
 func main() {
-	intChan := make(chan int)
-	defer close(intChan)
+	myJson := `
+[
+	{
+		"first_name": "Clark",
+		"last_name": "Kent",
+		"hair_color": "black",
+		"has_dog": true
+	},
+	{
+		"first_name": "Bruce",
+		"last_name": "Wayne",
+		"hair_color": "blue",
+		"has_dog": false
+	}
+]
+	`
 
-	go CalculateValue(intChan)
+	var unmarshalled []Person
 
-	num := <-intChan
-	log.Println(num)
+	err := json.Unmarshal([]byte(myJson), &unmarshalled)
+	if err != nil {
+		log.Println("Error unmarshalling json", err)
+	}
+
+	log.Println("unmarchalled: %v", unmarshalled)
 }
-
-//func PrintText(s string) {
-//	log.Println(s)
-//}
