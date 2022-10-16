@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"sort"
 )
 
 type User struct {
@@ -19,15 +18,11 @@ func (m *myStruct) printFirstName() string {
 }
 
 func main() {
-	var mySlice []int
+	numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
-	mySlice = append(mySlice, 5)
-	mySlice = append(mySlice, 2)
-	mySlice = append(mySlice, 3)
+	log.Println(numbers)
 
-	sort.Ints(mySlice)
-
-	log.Println(mySlice)
+	log.Println(numbers[0:2])
 }
 
 func saySomething(s string) (string, string) {
