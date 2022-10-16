@@ -12,5 +12,5 @@ func main() {
 	fmt.Println(whatToSay)
 
 	i = 10
-
+	fmt.Println("i is set to", i)
 }
