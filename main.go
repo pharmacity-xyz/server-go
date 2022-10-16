@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"sort"
 )
 
 type User struct {
@@ -19,17 +19,15 @@ func (m *myStruct) printFirstName() string {
 }
 
 func main() {
-	myMap := make(map[string]User)
+	var mySlice []int
 
-	me := User{
-		FirstName: "Trevor",
-		LastName:  "Sawler",
-	}
+	mySlice = append(mySlice, 5)
+	mySlice = append(mySlice, 2)
+	mySlice = append(mySlice, 3)
 
-	myMap["me"] = me
+	sort.Ints(mySlice)
 
-	fmt.Println(myMap["me"].FirstName)
-
+	log.Println(mySlice)
 }
 
 func saySomething(s string) (string, string) {
