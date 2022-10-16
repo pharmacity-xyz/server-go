@@ -3,9 +3,20 @@ package main
 import "log"
 
 func main() {
-	var firstLine = "Once upon a midnight dreary"
+	type User struct {
+		FirstName string
+		LastName  string
+		Email     string
+		Age       uint
+	}
 
-	for i, l := range firstLine {
-		log.Println(i, ":", l)
+	var users []User
+	users = append(users, User{"John", "Smith", "john@gmail.com", 14})
+	users = append(users, User{"John", "Smith", "john@gmail.com", 14})
+	users = append(users, User{"John", "Smith", "john@gmail.com", 14})
+	users = append(users, User{"John", "Smith", "john@gmail.com", 14})
+
+	for _, l := range users {
+		log.Println(l.FirstName)
 	}
 }
