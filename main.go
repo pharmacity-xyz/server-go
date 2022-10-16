@@ -1,17 +1,27 @@
 package main
 
-import "log"
+import (
+	"log"
+	"time"
+)
 
-var s = "seven"
+type User struct {
+	FirstName   string
+	LastName    string
+	PhoneNumber string
+	Age         int
+	BirthDate   time.Time
+}
 
 func main() {
-	var s2 = "six"
-	s := "eight"
+	user := User{
+		FirstName:   "Trevor",
+		LastName:    "Sawler",
+		PhoneNumber: "00000",
+		Age:         1,
+	}
 
-	log.Println("s is ", s)
-	log.Println("s2 is ", s2)
-
-	saySomething(s)
+	log.Println(user.FirstName, user.LastName)
 }
 
 func saySomething(s string) (string, string) {
