@@ -18,11 +18,12 @@ func (m *myStruct) printFirstName() string {
 }
 
 func main() {
-	numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	myNum := 100
+	isTrue := false
 
-	log.Println(numbers)
-
-	log.Println(numbers[0:2])
+	if myNum > 99 && !isTrue {
+		log.Println("myNum is greater than 99 and isTrue is set to true")
+	}
 }
 
 func saySomething(s string) (string, string) {
