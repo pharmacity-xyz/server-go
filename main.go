@@ -3,9 +3,9 @@ package main
 import "log"
 
 func main() {
-	animals := []string{"dog", "fish", "horse", "cow", "cat"}
+	var firstLine = "Once upon a midnight dreary"
 
-	for _, animal := range animals {
-		log.Println(animal)
+	for i, l := range firstLine {
+		log.Println(i, ":", l)
 	}
 }
