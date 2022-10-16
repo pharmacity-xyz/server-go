@@ -1,16 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"time"
 )
 
 type User struct {
-	FirstName   string
-	LastName    string
-	PhoneNumber string
-	Age         int
-	BirthDate   time.Time
+	FirstName string
+	LastName  string
 }
 
 type myStruct struct {
@@ -22,17 +19,16 @@ func (m *myStruct) printFirstName() string {
 }
 
 func main() {
-	// var myString string
-	//	var myInt int
-	//
-	//	myString = "Hi"
-	//	myInt = 11
+	myMap := make(map[string]User)
 
-	myMap := make(map[string]string)
+	me := User{
+		FirstName: "Trevor",
+		LastName:  "Sawler",
+	}
 
-	myMap["dog"] = "Samson"
+	myMap["me"] = me
 
-	log.Println(myMap["dog"])
+	fmt.Println(myMap["me"].FirstName)
 
 }
 
