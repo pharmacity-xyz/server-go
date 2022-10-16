@@ -13,4 +13,12 @@ func main() {
 
 	i = 10
 	fmt.Println("i is set to", i)
+
+	whatWasSaied := saySomething()
+
+	fmt.Println("The function returned", whatWasSaied)
+}
+
+func saySomething() string {
+	return "something"
 }
