@@ -1,29 +1,18 @@
 package main
 
-import (
-	"fmt"
-	"log"
-	"net/http"
-	"time"
-
-	"github.com/gorilla/mux"
-)
-
-func ArticleHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Category is: %v\n", vars["category"])
-	fmt.Fprintf(w, "ID is: %v\n", vars["id"])
-}
+import "fmt"
 
 func main() {
-	r := mux.NewRouter()
-	r.HandleFunc("/articles/{category}/{id:[0-9]+}", ArticleHandler)
-	srv := &http.Server{
-		Handler:      r,
-		Addr:         "127.0.0.1:8000",
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+	numGenerator := generator()
+	for i := 0; i < 5; i++ {
+		fmt.Print(numGenerator(), "\t")
 	}
-	log.Fatal(srv.ListenAndServe())
+}
+
+func generator() func() int {
+	var i = 0
+	return func() int {
+		i++
+		return i
+	}
 }
