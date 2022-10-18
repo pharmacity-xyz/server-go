@@ -2,34 +2,40 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/pharmacity-xyz/server/romanNumerals"
 )
 
-const portNumber = ":8080"
-
-// Home is the home page handler
-func Home(w http.ResponseWriter, r *http.Request) {
-	_, _ = fmt.Fprintf(w, "This is the home page")
-}
-
-// About is the home page handler
-func About(w http.ResponseWriter, r *http.Request) {
-	sum := addValues(2, 2)
-	_, _ = fmt.Fprintf(w, fmt.Sprintf("This is the about page and 2 + 2 is %d", sum))
-}
-
-// addValues adds two integers and return the sum
-func addValues(x, y int) int {
-	var sum int
-	sum = x + y
-	return sum
-}
-
-// main is the main
 func main() {
-	http.HandleFunc("/", Home)
-	http.HandleFunc("/about", About)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		urlPathElements := strings.Split(r.URL.Path, "")
 
-	fmt.Println(fmt.Sprintf("Starting application on port %s", portNumber))
-	_ = http.ListenAndServe(portNumber, nil)
+		if urlPathElements[1] == "roman_number" {
+			number, _ := strconv.Atoi(strings.TrimSpace(urlPathElements[2]))
+			if number == 0 || number > 10 {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte("404 - Not Found"))
+
+			} else {
+				fmt.Fprintf(w, "%q", html.EscapeString(romanNumerals.Numerals[number]))
+			}
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("400 - Bad request"))
+		}
+	})
+
+	s := &http.Server{
+		Addr:           ":8000",
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+
+	s.ListenAndServe()
 }
