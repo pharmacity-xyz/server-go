@@ -3,6 +3,7 @@ module github.com/pharmacity-xyz/server
 go 1.19
 
 require (
+	entgo.io/ent v0.11.3 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
