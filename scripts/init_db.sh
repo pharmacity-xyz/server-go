@@ -9,12 +9,12 @@ if ! [ -x "$(command -v psql)" ]; then
     exit 1
 fi
 
-if ! [ -x "$(command -v dotnet)" ]; then
-    echo >&2 "Error dotnet is not installed."
-    echo >&2 "Use:"
-    echo >&2 "sudo apt update && sudo apt install dotnet6"
-    exit 1
-fi
+# if ! [ -x "$(command -v dotnet)" ]; then
+#     echo >&2 "Error dotnet is not installed."
+#     echo >&2 "Use:"
+#     echo >&2 "sudo apt update && sudo apt install dotnet6"
+#     exit 1
+# fi
 
 # Check if a custom user has been set, otherwise default to 'postgres'
 DB_USER=${POSTGRES_USER:=postgres}

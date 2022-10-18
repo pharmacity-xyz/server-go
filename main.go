@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/pharmacity-xyz/server/handlers"
 )
 
 func Routes(app *fiber.App) {
@@ -12,6 +13,7 @@ func Routes(app *fiber.App) {
 	api.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
+	api.Post("/createuser", handlers.CreateUser)
 }
 
 func main() {
