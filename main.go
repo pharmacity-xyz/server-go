@@ -1,17 +1,29 @@
 package main
 
 import (
-	"io"
-	"log"
+	"fmt"
+	"math/rand"
 	"net/http"
 )
 
-func MyServer(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "Hello, world!\n")
+type CustomServeMux struct{}
+
+func (p *CustomServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/" {
+		giveRandom(w, r)
+		return
+	}
+
+	http.NotFound(w, r)
+	return
+}
+
+func giveRandom(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Your random number is :%f", rand.Float64())
 }
 
 func main() {
-	http.HandleFunc("/hello", MyServer)
+	mux := &CustomServeMux{}
 
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	http.ListenAndServe(":8000", mux)
 }
