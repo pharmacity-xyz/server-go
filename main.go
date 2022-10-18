@@ -1,56 +1,26 @@
 package main
 
 import (
-	jsonparse "encoding/json"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
+	"fmt"
 
-	"github.com/gorilla/mux"
-	"github.com/gorilla/rpc"
-	"github.com/gorilla/rpc/json"
+	"github.com/gofiber/fiber/v2"
 )
 
-type Args struct {
-	Id string
-}
+func Routes(app *fiber.App) {
+	api := app.Group("/api/v1")
 
-type Book struct {
-	Id     string `"json:string,omitempty"`
-	Name   string `"json:name,omitempty"`
-	Author string `"json:author,omitempty"`
-}
-
-type JSONServer struct{}
-
-func (t *JSONServer) GiveBookDetail(r *http.Request, args *Args, reply *Book) error {
-	var books []Book
-	raw, readerr := ioutil.ReadFile("./books.json")
-	if readerr != nil {
-		log.Println("error:", readerr)
-		os.Exit(1)
-	}
-	marshalerr := jsonparse.Unmarshal(raw, &books)
-	if marshalerr != nil {
-		log.Println("error:", marshalerr)
-		os.Exit(1)
-	}
-
-	for _, book := range books {
-		if book.Id == args.Id {
-			*reply = book
-			break
-		}
-	}
-	return nil
+	api.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!")
+	})
 }
 
 func main() {
-	s := rpc.NewServer()
-	s.RegisterCodec(json.NewCodec(), "application/json")
-	s.RegisterService(new(JSONServer), "")
-	r := mux.NewRouter()
-	r.Handle("/rpc", s)
-	http.ListenAndServe(":1234", r)
+	app := fiber.New()
+
+	Routes(app)
+
+	err := app.Listen(":3000")
+	if err != nil {
+		fmt.Println("Unable to start server")
+	}
 }
