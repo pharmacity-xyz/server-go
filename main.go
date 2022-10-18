@@ -1,44 +1,29 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"net/http"
-	"os/exec"
+	"time"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 )
 
-func getCommandOutput(command string, arguments ...string) string {
-	cmd := exec.Command(command, arguments...)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err := cmd.Start()
-	if err != nil {
-		log.Fatal(fmt.Sprint(err) + ": " + stderr.String())
-	}
-	err = cmd.Wait()
-	if err != nil {
-		log.Fatal(fmt.Sprint(err) + ": " + stderr.String())
-	}
-	return out.String()
-
-}
-
-func goVersion(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	fmt.Fprintf(w, getCommandOutput("/usr/bin/go", "version"))
-}
-
-func getFileContent(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	fmt.Fprintf(w, getCommandOutput("/bin/cat", params.ByName("name")))
+func ArticleHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Category is: %v\n", vars["category"])
+	fmt.Fprintf(w, "ID is: %v\n", vars["id"])
 }
 
 func main() {
-	router := httprouter.New()
-	router.GET("/api/v1/go-version", goVersion)
-	router.GET("/api/v1/show-file/:name", getFileContent)
-	log.Fatal(http.ListenAndServe(":8000", router))
+	r := mux.NewRouter()
+	r.HandleFunc("/articles/{category}/{id:[0-9]+}", ArticleHandler)
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         "127.0.0.1:8000",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+	log.Fatal(srv.ListenAndServe())
 }
