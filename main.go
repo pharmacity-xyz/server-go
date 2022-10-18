@@ -1,18 +1,25 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
-func main() {
-	numGenerator := generator()
-	for i := 0; i < 5; i++ {
-		fmt.Print(numGenerator(), "\t")
-	}
+func middleware(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Executing middleware before request phase!")
+		handler.ServeHTTP(w, r)
+		fmt.Println("Executing middleware after response phase!")
+	})
 }
 
-func generator() func() int {
-	var i = 0
-	return func() int {
-		i++
-		return i
-	}
+func mainLogic(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Executing mainHandler...")
+	w.Write([]byte("Ok"))
+}
+
+func main() {
+	mainLogicHandler := http.HandlerFunc(mainLogic)
+	http.Handle("/", middleware(mainLogicHandler))
+	http.ListenAndServe(":8000", nil)
 }
