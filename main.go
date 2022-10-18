@@ -1,35 +1,56 @@
 package main
 
 import (
+	jsonparse "encoding/json"
+	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
-	"net/rpc"
-	"time"
+	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/rpc"
+	"github.com/gorilla/rpc/json"
 )
 
-type Args struct{}
+type Args struct {
+	Id string
+}
 
-type TimeServer int64
+type Book struct {
+	Id     string `"json:string,omitempty"`
+	Name   string `"json:name,omitempty"`
+	Author string `"json:author,omitempty"`
+}
 
-func (t *TimeServer) GiveServerTime(args *Args, reply *int64) error {
-	*reply = time.Now().Unix()
+type JSONServer struct{}
+
+func (t *JSONServer) GiveBookDetail(r *http.Request, args *Args, reply *Book) error {
+	var books []Book
+	raw, readerr := ioutil.ReadFile("./books.json")
+	if readerr != nil {
+		log.Println("error:", readerr)
+		os.Exit(1)
+	}
+	marshalerr := jsonparse.Unmarshal(raw, &books)
+	if marshalerr != nil {
+		log.Println("error:", marshalerr)
+		os.Exit(1)
+	}
+
+	for _, book := range books {
+		if book.Id == args.Id {
+			*reply = book
+			break
+		}
+	}
 	return nil
 }
 
 func main() {
-	timeServer := new(TimeServer)
-	err := rpc.Register(timeServer)
-	if err != nil {
-		log.Fatal("error")
-	}
-	rpc.HandleHTTP()
-	l, e := net.Listen("tcp", ":1234")
-	if e != nil {
-		log.Fatal("listen error:", e)
-	}
-	errorS := http.Serve(l, nil)
-	if errorS != nil {
-		log.Fatal("error")
-	}
+	s := rpc.NewServer()
+	s.RegisterCodec(json.NewCodec(), "application/json")
+	s.RegisterService(new(JSONServer), "")
+	r := mux.NewRouter()
+	r.Handle("/rpc", s)
+	http.ListenAndServe(":1234", r)
 }
