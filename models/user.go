@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -48,4 +49,25 @@ func (us *UserService) Register(user *User, password string) (*User, error) {
 		return nil, fmt.Errorf("fail: %w", err)
 	}
 	return user, nil
+}
+
+func (us *UserService) Login(email, password string) (*User, error) {
+	email = strings.ToLower(email)
+	user := User{
+		Email: email,
+	}
+	row := us.DB.QueryRow(`
+		SELECT user_id, password_hash
+		FROM users
+		WHERE email=$1
+	`, email)
+	err := row.Scan(&user.UserId, &user.PasswordHash)
+	if err != nil {
+		return nil, fmt.Errorf("authenticate: %w", err)
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return nil, fmt.Errorf("authenticate: %w", err)
+	}
+	return &user, nil
 }

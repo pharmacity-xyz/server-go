@@ -10,3 +10,8 @@ type Register struct {
 	Country         string
 	CompanyName     string
 }
+
+type Login struct {
+	Email    string
+	Password string
+}

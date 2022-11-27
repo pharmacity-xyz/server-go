@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/pharmacity-xyz/server-go/models"
@@ -32,7 +33,7 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 
 	user := models.User{
 		UserId:      uuid.New(),
-		Email:       request.Email,
+		Email:       strings.ToLower(request.Email),
 		FirstName:   request.FirstName,
 		LastName:    request.LastName,
 		City:        request.City,
@@ -52,6 +53,8 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u Users) Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var request requests.Login
 	var response = responses.LoginResponse{
 		Data:    "",
 		Message: "",
