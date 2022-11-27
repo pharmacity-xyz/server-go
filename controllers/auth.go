@@ -26,8 +26,7 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		response.Message = err.Error()
-		json.NewEncoder(w).Encode(response)
-		w.WriteHeader(http.StatusBadRequest)
+		responses.JSONError(w, response, http.StatusBadRequest)
 		return
 	}
 
@@ -43,8 +42,7 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 	_, err = u.UserService.Register(&user, request.Password)
 	if err != nil {
 		response.Message = err.Error()
-		json.NewEncoder(w).Encode(response)
-		w.WriteHeader(http.StatusInternalServerError)
+		responses.JSONError(w, response, http.StatusInternalServerError)
 		return
 	}
 
