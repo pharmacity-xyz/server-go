@@ -31,3 +31,19 @@ func CreateJWT(userId uuid.UUID, role string) (string, time.Time, error) {
 	}
 	return tokenString, expirationTime, nil
 }
+
+func ParseJWT(tokenString string) (uuid.UUID, string, error) {
+	claims := &Claims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_KEY")), nil
+	})
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+	if !token.Valid {
+		return uuid.Nil, "", err
+	}
+
+	return claims.UserId, claims.Role, nil
+}

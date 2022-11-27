@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -100,6 +101,14 @@ func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		responses.JSONError(w, response, http.StatusInternalServerError)
 		return
 	}
+
+	userId, role, err := ParseJWT(token)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+	fmt.Printf("UserId, Role: %s, %s", userId.String(), role)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
