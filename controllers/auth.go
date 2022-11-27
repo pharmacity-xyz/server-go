@@ -30,3 +30,33 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(response)
 }
+
+func (u Users) Login(w http.ResponseWriter, r *http.Request) {
+	var response = utils.LoginResponse{
+		Data:    "",
+		Message: "",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	var response = utils.LoginResponse{
+		Data:    "",
+		Message: "",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (u Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var response = utils.LoginResponse{
+		Data:    "",
+		Message: "",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
