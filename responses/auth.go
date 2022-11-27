@@ -1,4 +1,4 @@
-package utils
+package responses
 
 type RegisterResponse struct {
 	Data    string `json:"data"`

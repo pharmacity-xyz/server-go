@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/pharmacity-xyz/server-go/models"
-	"github.com/pharmacity-xyz/server-go/utils"
+	"github.com/pharmacity-xyz/server-go/requests"
+	"github.com/pharmacity-xyz/server-go/responses"
 )
 
 type Users struct {
@@ -13,26 +15,40 @@ type Users struct {
 }
 
 func (u Users) Register(w http.ResponseWriter, r *http.Request) {
-	password := r.FormValue("password")
-	var response = utils.RegisterResponse{
+	var request requests.Register
+	var response = responses.RegisterResponse{
 		Data:    "",
 		Message: "",
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	user := models.User{}
-	user1, err := u.UserService.Register(&user, password)
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		response.Message = err.Error()
+		json.NewEncoder(w).Encode(response)
+	}
+
+	user := models.User{
+		UserId:      uuid.New(),
+		Email:       request.Email,
+		FirstName:   request.FirstName,
+		LastName:    request.LastName,
+		City:        request.City,
+		Country:     request.Country,
+		CompanyName: request.CompanyName,
+	}
+	user1, err := u.UserService.Register(&user, request.Password)
 	if err != nil {
 		response.Message = err.Error()
 		json.NewEncoder(w).Encode(response)
 	}
 	response.Data = user1.UserId.String()
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
 func (u Users) Login(w http.ResponseWriter, r *http.Request) {
-	var response = utils.LoginResponse{
+	var response = responses.LoginResponse{
 		Data:    "",
 		Message: "",
 	}
@@ -42,7 +58,7 @@ func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	var response = utils.LoginResponse{
+	var response = responses.LoginResponse{
 		Data:    "",
 		Message: "",
 	}
@@ -52,7 +68,7 @@ func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	var response = utils.LoginResponse{
+	var response = responses.LoginResponse{
 		Data:    "",
 		Message: "",
 	}

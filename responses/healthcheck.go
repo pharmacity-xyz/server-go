@@ -1,4 +1,4 @@
-package utils
+package responses
 
 type HealthCheckResponse struct {
 	Data    string `json:"data"`
