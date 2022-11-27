@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -11,11 +12,11 @@ import (
 	"github.com/pharmacity-xyz/server-go/responses"
 )
 
-type Users struct {
+type Auths struct {
 	UserService *models.UserService
 }
 
-func (u Users) Register(w http.ResponseWriter, r *http.Request) {
+func (a Auths) Register(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var request requests.Register
@@ -40,7 +41,7 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 		Country:     request.Country,
 		CompanyName: request.CompanyName,
 	}
-	_, err = u.UserService.Register(&user, request.Password)
+	_, err = a.UserService.Register(&user, request.Password)
 	if err != nil {
 		response.Message = err.Error()
 		responses.JSONError(w, response, http.StatusInternalServerError)
@@ -52,7 +53,7 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func (u Users) Login(w http.ResponseWriter, r *http.Request) {
+func (a Auths) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var request requests.Login
 	var response = responses.AuthResponse[string]{
@@ -67,13 +68,14 @@ func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := u.UserService.Login(request.Email, request.Password)
+	user, err := a.UserService.Login(request.Email, request.Password)
 	if err != nil {
 		response.Message = err.Error()
 		responses.JSONError(w, response, http.StatusInternalServerError)
 		return
 	}
 
+	fmt.Printf("User Role: %s\n", user.Role)
 	tokenString, expirationTime, err := CreateJWT(user.UserId, user.Role)
 	if err != nil {
 		response.Message = err.Error()
@@ -87,7 +89,7 @@ func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
+func (a Auths) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	newPassword := r.FormValue("new_password")
 	var response = responses.AuthResponse[string]{
@@ -109,7 +111,7 @@ func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	success, err := u.UserService.ChangePassword(userId, newPassword)
+	success, err := a.UserService.ChangePassword(userId, newPassword)
 	if !success || err != nil {
 		response.Message = err.Error()
 		responses.JSONError(w, response, http.StatusUnauthorized)
@@ -121,7 +123,7 @@ func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func (u Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+func (a Auths) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var response = responses.AuthResponse[string]{
 		Data:    "",
 		Message: "",

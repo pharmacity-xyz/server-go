@@ -56,11 +56,11 @@ func (us *UserService) Login(email, password string) (*User, error) {
 		Email: email,
 	}
 	row := us.DB.QueryRow(`
-		SELECT user_id, password_hash
+		SELECT user_id, password_hash, role
 		FROM users
 		WHERE email=$1
 	`, email)
-	err := row.Scan(&user.UserId, &user.PasswordHash)
+	err := row.Scan(&user.UserId, &user.PasswordHash, &user.Role)
 	if err != nil {
 		return nil, fmt.Errorf("authenticate: %w", err)
 	}
@@ -85,6 +85,36 @@ func (us *UserService) ChangePassword(userId uuid.UUID, newPassword string) (boo
 		return false, fmt.Errorf("fail: %w", err)
 	}
 	return true, nil
+}
+
+func (us *UserService) GetAll() ([]*User, error) {
+	var users []*User
+	rows, err := us.DB.Query(`
+		SELECT *
+		FROM users
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(
+			&user.UserId,
+			&user.Email,
+			&user.PasswordHash,
+			&user.FirstName,
+			&user.LastName,
+			&user.City,
+			&user.Country,
+			&user.CompanyName,
+			&user.Role); err != nil {
+			return nil, fmt.Errorf("fail: %w", err)
+		}
+		users = append(users, &user)
+	}
+	return users, nil
 }
 
 func hash(password string) (string, error) {

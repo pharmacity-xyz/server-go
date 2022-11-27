@@ -7,12 +7,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
+	"github.com/pharmacity-xyz/server-go/config"
 	"github.com/pharmacity-xyz/server-go/controllers"
 	"github.com/pharmacity-xyz/server-go/models"
-)
-
-const (
-	BASICAPI = "/api/v1"
 )
 
 func main() {
@@ -30,17 +27,22 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Get(BASICAPI+`/healthcheck`, controllers.HealthCheck)
+	r.Get(config.BASICAPI+`/healthcheck`, controllers.HealthCheck)
 
 	userService := models.UserService{
 		DB: db,
 	}
+	authC := controllers.Auths{
+		UserService: &userService,
+	}
+	r.Post(config.BASICAPI+`/auth/register`, authC.Register)
+	r.Post(config.BASICAPI+`/auth/login`, authC.Login)
+	r.Post(config.BASICAPI+`/auth/change_password`, authC.ChangePassword)
+
 	userC := controllers.Users{
 		UserService: &userService,
 	}
-	r.Post(BASICAPI+`/auth/register`, userC.Register)
-	r.Post(BASICAPI+`/auth/login`, userC.Login)
-	r.Post(BASICAPI+`/auth/change_password`, userC.ChangePassword)
+	r.Get(config.BASICAPI+`/user`, userC.GetAll)
 
 	fmt.Println("Starting the server on :3000...")
 	http.ListenAndServe(":3000", r)

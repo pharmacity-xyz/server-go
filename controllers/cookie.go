@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/pharmacity-xyz/server-go/config"
 )
 
 const (
@@ -15,6 +17,7 @@ func newCookie(name, value string, expirationTime time.Time) *http.Cookie {
 		Name:    name,
 		Value:   value,
 		Expires: expirationTime,
+		Path:    config.BASICAPI,
 	}
 	return &cookie
 }
