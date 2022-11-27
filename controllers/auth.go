@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -20,7 +19,7 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var request requests.Register
-	var response = responses.RegisterResponse{
+	var response = responses.AuthResponse[string]{
 		Data:    "",
 		Message: "",
 	}
@@ -56,7 +55,7 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var request requests.Login
-	var response = responses.LoginResponse{
+	var response = responses.AuthResponse[string]{
 		Data:    "",
 		Message: "",
 	}
@@ -91,7 +90,7 @@ func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	newPassword := r.FormValue("new_password")
-	var response = responses.ChangePasswordResponse{
+	var response = responses.AuthResponse[string]{
 		Data:    "",
 		Message: "",
 	}
@@ -103,20 +102,27 @@ func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, role, err := ParseJWT(token)
+	userId, _, err := ParseJWT(token)
 	if err != nil {
 		response.Message = err.Error()
 		responses.JSONError(w, response, http.StatusUnauthorized)
 		return
 	}
-	fmt.Printf("UserId, Role: %s, %s", userId.String(), role)
+
+	success, err := u.UserService.ChangePassword(userId, newPassword)
+	if !success || err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
+	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
 
 func (u Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	var response = responses.LoginResponse{
+	var response = responses.AuthResponse[string]{
 		Data:    "",
 		Message: "",
 	}
