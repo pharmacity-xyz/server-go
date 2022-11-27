@@ -11,3 +11,9 @@ type LoginResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 }
+
+type ChangePasswordResponse struct {
+	Data    string `json:"data"`
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}

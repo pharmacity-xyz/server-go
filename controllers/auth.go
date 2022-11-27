@@ -3,11 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"os"
 	"strings"
-	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/pharmacity-xyz/server-go/models"
 	"github.com/pharmacity-xyz/server-go/requests"
@@ -16,12 +13,6 @@ import (
 
 type Users struct {
 	UserService *models.UserService
-}
-
-type Claims struct {
-	UserId uuid.UUID `json:"user_id"`
-	Role   string    `json:"role"`
-	jwt.RegisteredClaims
 }
 
 func (u Users) Register(w http.ResponseWriter, r *http.Request) {
@@ -83,17 +74,7 @@ func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expirationTime := time.Now().Add(5 * time.Minute)
-	claims := &Claims{
-		UserId: user.UserId,
-		Role:   user.Role,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
+	tokenString, expirationTime, err := CreateJWT(user.UserId, user.Role)
 	if err != nil {
 		response.Message = err.Error()
 		responses.JSONError(w, response, http.StatusInternalServerError)
@@ -107,9 +88,17 @@ func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	var response = responses.LoginResponse{
+	w.Header().Set("Content-Type", "application/json")
+	var response = responses.ChangePasswordResponse{
 		Data:    "",
 		Message: "",
+	}
+
+	token, err := readCookie(r, COOKIE_TOKEN)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

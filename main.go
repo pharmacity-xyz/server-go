@@ -40,6 +40,7 @@ func main() {
 	}
 	r.Post(BASICAPI+`/auth/register`, userC.Register)
 	r.Post(BASICAPI+`/auth/login`, userC.Login)
+	r.Post(BASICAPI+`/auth/change_password`, userC.ChangePassword)
 
 	fmt.Println("Starting the server on :3000...")
 	http.ListenAndServe(":3000", r)
