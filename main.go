@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 	"github.com/pharmacity-xyz/server-go/controllers"
 	"github.com/pharmacity-xyz/server-go/models"
 )
@@ -15,12 +16,25 @@ const (
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	db, err := models.Open()
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
 	r.Get(BASICAPI+`/healthcheck`, controllers.HealthCheck)
 
-	userService := models.UserService{}
+	userService := models.UserService{
+		DB: db,
+	}
 	userC := controllers.Users{
 		UserService: &userService,
 	}

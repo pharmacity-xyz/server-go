@@ -15,6 +15,8 @@ type Users struct {
 }
 
 func (u Users) Register(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	var request requests.Register
 	var response = responses.RegisterResponse{
 		Data:    "",
@@ -25,6 +27,8 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.Message = err.Error()
 		json.NewEncoder(w).Encode(response)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	user := models.User{
@@ -36,14 +40,16 @@ func (u Users) Register(w http.ResponseWriter, r *http.Request) {
 		Country:     request.Country,
 		CompanyName: request.CompanyName,
 	}
-	user1, err := u.UserService.Register(&user, request.Password)
+	_, err = u.UserService.Register(&user, request.Password)
 	if err != nil {
 		response.Message = err.Error()
 		json.NewEncoder(w).Encode(response)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	response.Data = user1.UserId.String()
 
-	w.Header().Set("Content-Type", "application/json")
+	response.Data = user.UserId.String()
+	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
 

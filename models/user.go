@@ -31,7 +31,7 @@ func (us *UserService) Register(user *User, password string) (*User, error) {
 	}
 	user.PasswordHash = string(hashedBytes)
 
-	row := us.DB.QueryRow(`
+	_, err = us.DB.Exec(`
 		INSERT INTO users (user_id, email, password_hash, first_name, last_name, city, country, company_name, role)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
 	`, user.UserId,
@@ -44,7 +44,6 @@ func (us *UserService) Register(user *User, password string) (*User, error) {
 		user.CompanyName,
 		user.Role,
 	)
-	err = row.Scan()
 	if err != nil {
 		return nil, fmt.Errorf("fail: %w", err)
 	}
