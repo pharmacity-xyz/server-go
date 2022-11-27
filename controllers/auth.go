@@ -90,6 +90,7 @@ func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 
 func (u Users) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	newPassword := r.FormValue("new_password")
 	var response = responses.ChangePasswordResponse{
 		Data:    "",
 		Message: "",

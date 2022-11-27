@@ -26,12 +26,11 @@ type UserService struct {
 }
 
 func (us *UserService) Register(user *User, password string) (*User, error) {
-	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedPassword, err := hash(password)
 	if err != nil {
 		return nil, fmt.Errorf("fail: %w", err)
 	}
-	user.PasswordHash = string(hashedBytes)
-
+	user.PasswordHash = hashedPassword
 	_, err = us.DB.Exec(`
 		INSERT INTO users (user_id, email, password_hash, first_name, last_name, city, country, company_name, role)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
@@ -70,4 +69,28 @@ func (us *UserService) Login(email, password string) (*User, error) {
 		return nil, fmt.Errorf("authenticate: %w", err)
 	}
 	return &user, nil
+}
+
+func (us *UserService) ChangePassword(userId uuid.UUID, newPassword string) (bool, error) {
+	hashedPassword, err := hash(newPassword)
+	if err != nil {
+		return false, fmt.Errorf("fail: %w", err)
+	}
+	_, err = us.DB.Exec(`
+		UPDATE users 
+		SET password_hash = $1
+		WHERE user_id = $2 
+	`, hashedPassword, userId)
+	if err != nil {
+		return false, fmt.Errorf("fail: %w", err)
+	}
+	return true, nil
+}
+
+func hash(password string) (string, error) {
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("fail: %w", err)
+	}
+	return string(hashedBytes), nil
 }
