@@ -117,6 +117,18 @@ func (us *UserService) GetAll() ([]*User, error) {
 	return users, nil
 }
 
+func (us *UserService) Update(u *User) error {
+	_, err := us.DB.Exec(`
+		UPDATE users
+		SET email = $1, first_name = $2, last_name = $3, city = $4, country = $5, company_name = $6
+		WHERE user_id = $7 RETURNING password_hash
+	`, u.Email, u.FirstName, u.LastName, u.City, u.Country, u.CompanyName, u.UserId)
+	if err != nil {
+		return fmt.Errorf("update: %w", err)
+	}
+	return nil
+}
+
 func hash(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

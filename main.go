@@ -43,6 +43,7 @@ func main() {
 		UserService: &userService,
 	}
 	r.Get(config.BASICAPI+`/user`, userC.GetAll)
+	r.Put(config.BASICAPI+`/user`, userC.Update)
 
 	fmt.Println("Starting the server on :3000...")
 	http.ListenAndServe(":3000", r)
