@@ -45,6 +45,14 @@ func main() {
 	r.Get(config.BASICAPI+`/user`, userC.GetAll)
 	r.Put(config.BASICAPI+`/user`, userC.Update)
 
+	categoryService := models.CategoryService{
+		DB: db,
+	}
+	categoryC := controllers.Categories{
+		CategoryService: &categoryService,
+	}
+	r.Get(config.BASICAPI+`/category`, categoryC.GetAll)
+
 	fmt.Println("Starting the server on :3000...")
 	http.ListenAndServe(":3000", r)
 }
