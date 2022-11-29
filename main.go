@@ -31,6 +31,31 @@ func (sr ServiceRouter) AuthRouter(userService *models.UserService) {
 	})
 }
 
+func (sr ServiceRouter) UserRouter(userService *models.UserService) {
+	userC := controllers.Users{
+		UserService: userService,
+	}
+	sr.Route.Get(config.BASICAPI+`/user`, userC.GetAll)
+	sr.Route.Put(config.BASICAPI+`/user`, userC.Update)
+}
+
+func (sr ServiceRouter) CategoryRouter(categoryService *models.CategoryService) {
+	categoryC := controllers.Categories{
+		CategoryService: categoryService,
+	}
+	sr.Route.Get(config.BASICAPI+`/category`, categoryC.GetAll)
+	sr.Route.Post(config.BASICAPI+`/category`, categoryC.Add)
+	sr.Route.Put(config.BASICAPI+`/category`, categoryC.Update)
+	sr.Route.Delete(config.BASICAPI+`/category/{categoryId}`, categoryC.Delete)
+}
+
+func (sr ServiceRouter) ProductRouter(productService *models.ProductService) {
+	productC := controllers.Products{
+		ProductService: productService,
+	}
+	sr.Route.Post(config.BASICAPI+"/product", productC.Add)
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -52,25 +77,17 @@ func main() {
 	userService := models.UserService{
 		DB: db,
 	}
-
-	serviceRouter.AuthRouter(&userService)
-
-	userC := controllers.Users{
-		UserService: &userService,
-	}
-	r.Get(config.BASICAPI+`/user`, userC.GetAll)
-	r.Put(config.BASICAPI+`/user`, userC.Update)
-
 	categoryService := models.CategoryService{
 		DB: db,
 	}
-	categoryC := controllers.Categories{
-		CategoryService: &categoryService,
+	productService := models.ProductService{
+		DB: db,
 	}
-	r.Get(config.BASICAPI+`/category`, categoryC.GetAll)
-	r.Post(config.BASICAPI+`/category`, categoryC.Add)
-	r.Put(config.BASICAPI+`/category`, categoryC.Update)
-	r.Delete(config.BASICAPI+`/category/{categoryId}`, categoryC.Delete)
+
+	serviceRouter.AuthRouter(&userService)
+	serviceRouter.UserRouter(&userService)
+	serviceRouter.CategoryRouter(&categoryService)
+	serviceRouter.ProductRouter(&productService)
 
 	fmt.Println("Starting the server on :3000...")
 	http.ListenAndServe(":3000", r)
