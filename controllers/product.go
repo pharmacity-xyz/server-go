@@ -8,6 +8,7 @@ import (
 	"github.com/pharmacity-xyz/server-go/models"
 	"github.com/pharmacity-xyz/server-go/requests"
 	"github.com/pharmacity-xyz/server-go/responses"
+	"github.com/pharmacity-xyz/server-go/types"
 )
 
 type Products struct {
@@ -17,7 +18,7 @@ type Products struct {
 func (p Products) Add(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var request requests.AddProduct
-	var response = responses.CategoryResponse[*models.Category]{
+	var response = types.ServiceResponse[*models.Product]{
 		Message: "",
 	}
 
@@ -35,18 +36,24 @@ func (p Products) Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newCategory := models.Category{
-		CategoryId: uuid.New(),
-		Name:       request.CategoryName,
+	newProduct := models.Product{
+		ProductId:          uuid.New(),
+		ProductName:        request.ProductName,
+		ProductDescription: request.ProductDescription,
+		ImageURL:           request.ImageURL,
+		Stock:              request.Stock,
+		Price:              request.Price,
+		Featured:           false,
+		CategoryId:         request.CategoryId,
 	}
-	categories, err := c.CategoryService.Add(&newCategory)
+	product, err := p.ProductService.Add(&newProduct)
 	if err != nil {
 		response.Message = err.Error()
 		responses.JSONError(w, response, http.StatusInternalServerError)
 		return
 	}
 
-	response.Data = categories
+	response.Data = product
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }

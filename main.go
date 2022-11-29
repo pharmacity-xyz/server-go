@@ -12,6 +12,25 @@ import (
 	"github.com/pharmacity-xyz/server-go/models"
 )
 
+type ServiceRouter struct {
+	Route *chi.Mux
+}
+
+func (sr ServiceRouter) HealchCheckRouter() {
+	sr.Route.Get(config.BASICAPI+`/healthcheck`, controllers.HealthCheck)
+}
+
+func (sr ServiceRouter) AuthRouter(userService *models.UserService) {
+	authC := controllers.Auths{
+		UserService: userService,
+	}
+	sr.Route.Route(config.BASICAPI+`/auth`, func(r chi.Router) {
+		r.Post(`/register`, authC.Register)
+		r.Post(`/login`, authC.Login)
+		r.Post(`/change_password`, authC.ChangePassword)
+	})
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -25,19 +44,16 @@ func main() {
 	defer db.Close()
 
 	r := chi.NewRouter()
+	serviceRouter := ServiceRouter{Route: r}
 	r.Use(middleware.Logger)
 
-	r.Get(config.BASICAPI+`/healthcheck`, controllers.HealthCheck)
+	serviceRouter.HealchCheckRouter()
 
 	userService := models.UserService{
 		DB: db,
 	}
-	authC := controllers.Auths{
-		UserService: &userService,
-	}
-	r.Post(config.BASICAPI+`/auth/register`, authC.Register)
-	r.Post(config.BASICAPI+`/auth/login`, authC.Login)
-	r.Post(config.BASICAPI+`/auth/change_password`, authC.ChangePassword)
+
+	serviceRouter.AuthRouter(&userService)
 
 	userC := controllers.Users{
 		UserService: &userService,

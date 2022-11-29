@@ -7,6 +7,7 @@ import (
 	"github.com/pharmacity-xyz/server-go/models"
 	"github.com/pharmacity-xyz/server-go/requests"
 	"github.com/pharmacity-xyz/server-go/responses"
+	"github.com/pharmacity-xyz/server-go/types"
 )
 
 type Users struct {
@@ -15,7 +16,7 @@ type Users struct {
 
 func (u Users) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var response = responses.UserResponse[[]*models.User]{
+	var response = types.ServiceResponse[[]*models.User]{
 		Message: "",
 	}
 
@@ -41,7 +42,7 @@ func (u Users) GetAll(w http.ResponseWriter, r *http.Request) {
 func (u Users) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var request requests.UpdateUser
-	var response = responses.UserResponse[*models.User]{
+	var response = types.ServiceResponse[*models.User]{
 		Message: "",
 	}
 
