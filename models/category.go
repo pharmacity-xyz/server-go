@@ -16,9 +16,9 @@ type Category struct {
 	Name       string
 }
 
-func (us *CategoryService) GetAll() ([]*Category, error) {
+func (cs *CategoryService) GetAll() ([]*Category, error) {
 	var categories []*Category
-	rows, err := us.DB.Query(`
+	rows, err := cs.DB.Query(`
 		SELECT *
 		FROM categories
 	`)
@@ -38,4 +38,16 @@ func (us *CategoryService) GetAll() ([]*Category, error) {
 		categories = append(categories, &category)
 	}
 	return categories, nil
+}
+
+func (cs *CategoryService) Add(newCategory *Category) (*Category, error) {
+	_, err := cs.DB.Exec(`
+		INSERT INTO categories (category_id, name)
+		VALUES ($1, $2)
+	`, newCategory.CategoryId, newCategory.Name)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+
+	return newCategory, nil
 }
