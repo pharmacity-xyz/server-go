@@ -64,3 +64,15 @@ func (cs *CategoryService) Update(updatedCategory *Category) (*Category, error) 
 
 	return updatedCategory, nil
 }
+
+func (cs *CategoryService) Delete(categoryId string) error {
+	_, err := cs.DB.Exec(`
+		DELETE FROM categories
+		WHERE category_id = $1
+	`, categoryId)
+	if err != nil {
+		return fmt.Errorf("fail: %w", err)
+	}
+
+	return nil
+}

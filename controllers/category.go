@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/pharmacity-xyz/server-go/models"
 	"github.com/pharmacity-xyz/server-go/requests"
@@ -102,6 +103,34 @@ func (c Categories) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Data = category
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (c Categories) Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = responses.CategoryResponse[bool]{
+		Message: "",
+	}
+	categoryId := chi.URLParam(r, "categoryId")
+
+	err := AuthorizeAdmin(r)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	err = c.CategoryService.Delete(categoryId)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	response.Data = true
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
