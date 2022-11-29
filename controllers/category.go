@@ -68,3 +68,40 @@ func (c Categories) Add(w http.ResponseWriter, r *http.Request) {
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
+
+func (c Categories) Update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var request requests.UpdateCategory
+	var response = responses.CategoryResponse[*models.Category]{
+		Message: "",
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusBadRequest)
+		return
+	}
+
+	err = AuthorizeAdmin(r)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	newCategory := models.Category{
+		CategoryId: request.CategoryId,
+		Name:       request.Name,
+	}
+	category, err := c.CategoryService.Update(&newCategory)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = category
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}

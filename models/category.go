@@ -51,3 +51,16 @@ func (cs *CategoryService) Add(newCategory *Category) (*Category, error) {
 
 	return newCategory, nil
 }
+
+func (cs *CategoryService) Update(updatedCategory *Category) (*Category, error) {
+	_, err := cs.DB.Exec(`
+		UPDATE categories
+		SET name = $1
+		WHERE category_id = $2
+	`, updatedCategory.Name, updatedCategory.CategoryId)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+
+	return updatedCategory, nil
+}
