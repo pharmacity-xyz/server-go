@@ -18,21 +18,10 @@ func (u Users) GetAll(w http.ResponseWriter, r *http.Request) {
 	var response = responses.UserResponse[[]*models.User]{
 		Message: "",
 	}
-	token, err := readCookie(r, COOKIE_TOKEN)
-	if err != nil {
-		response.Message = err.Error()
-		responses.JSONError(w, response, http.StatusInternalServerError)
-		return
-	}
 
-	_, role, err := ParseJWT(token)
+	err := AuthorizeAdmin(r)
 	if err != nil {
 		response.Message = err.Error()
-		responses.JSONError(w, response, http.StatusUnauthorized)
-		return
-	}
-	if role != "Admin" {
-		response.Message = "unauthorized"
 		responses.JSONError(w, response, http.StatusUnauthorized)
 		return
 	}
@@ -40,7 +29,7 @@ func (u Users) GetAll(w http.ResponseWriter, r *http.Request) {
 	users, err := u.UserService.GetAll()
 	if err != nil {
 		response.Message = err.Error()
-		responses.JSONError(w, response, http.StatusUnauthorized)
+		responses.JSONError(w, response, http.StatusInternalServerError)
 		return
 	}
 

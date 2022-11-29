@@ -49,7 +49,7 @@ func (c Categories) Add(w http.ResponseWriter, r *http.Request) {
 	err = AuthorizeAdmin(r)
 	if err != nil {
 		response.Message = err.Error()
-		responses.JSONError(w, response, http.StatusBadRequest)
+		responses.JSONError(w, response, http.StatusUnauthorized)
 		return
 	}
 
@@ -60,7 +60,7 @@ func (c Categories) Add(w http.ResponseWriter, r *http.Request) {
 	categories, err := c.CategoryService.Add(&newCategory)
 	if err != nil {
 		response.Message = err.Error()
-		responses.JSONError(w, response, http.StatusBadRequest)
+		responses.JSONError(w, response, http.StatusInternalServerError)
 		return
 	}
 
