@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/pharmacity-xyz/server-go/models"
 	"github.com/pharmacity-xyz/server-go/requests"
@@ -72,6 +73,25 @@ func (p Products) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Data = products
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (p Products) GetProductByProductId(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = types.ServiceResponse[*models.Product]{
+		Message: "",
+	}
+
+	productId := chi.URLParam(r, "productId")
+	product, err := p.ProductService.GetProductByProductId(productId)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = product
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }

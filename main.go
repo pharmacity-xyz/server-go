@@ -56,6 +56,7 @@ func (sr ServiceRouter) ProductRouter(productService *models.ProductService) {
 	sr.Route.Route(config.BASICAPI, func(r chi.Router) {
 		r.Post("/product", productC.Add)
 		r.Get("/product", productC.GetAll)
+		r.Get("/product/{productId}", productC.GetProductByProductId)
 	})
 }
 

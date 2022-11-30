@@ -79,3 +79,26 @@ func (ps ProductService) GetAll() ([]*Product, error) {
 	}
 	return products, nil
 }
+
+func (ps ProductService) GetProductByProductId(productId string) (*Product, error) {
+	var product Product
+
+	row := ps.DB.QueryRow(`
+		SELECT *
+		FROM products
+		WHERE product_id = $1
+	`, productId)
+	err := row.Scan(&product.ProductId,
+		&product.ProductName,
+		&product.ProductDescription,
+		&product.ImageURL,
+		&product.Stock,
+		&product.Price,
+		&product.Featured,
+		&product.CategoryId)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+
+	return &product, nil
+}
