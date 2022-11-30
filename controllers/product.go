@@ -135,3 +135,21 @@ func (p Products) Search(w http.ResponseWriter, r *http.Request) {
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
+
+func (p Products) FeaturedProducts(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = types.ServiceResponse[[]*models.Product]{
+		Message: "",
+	}
+
+	products, err := p.ProductService.FeaturedProducts()
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = products
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
