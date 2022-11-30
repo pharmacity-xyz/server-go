@@ -43,3 +43,67 @@ func (c CartItems) Add(w http.ResponseWriter, r *http.Request) {
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
+
+func (c CartItems) GetAll(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = responses.CategoryResponse[[]*models.CartItemWithProduct]{
+		Message: "",
+	}
+
+	token, err := readCookie(r, COOKIE_TOKEN)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	userId, _, err := ParseJWT(token)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	cartItemWithProduct, err := c.CartItemService.GetAll(userId)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = cartItemWithProduct
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (c CartItems) Count(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = responses.CategoryResponse[int]{
+		Message: "",
+	}
+
+	token, err := readCookie(r, COOKIE_TOKEN)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	userId, _, err := ParseJWT(token)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	count, err := c.CartItemService.Count(userId)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = count
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}

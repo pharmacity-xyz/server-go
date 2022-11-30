@@ -17,6 +17,14 @@ type CartItem struct {
 	Quantity  int
 }
 
+type CartItemWithProduct struct {
+	ProductId   uuid.UUID
+	ProductName string
+	ImageUrl    string
+	Price       int
+	Quantity    int
+}
+
 func (cis CartItemService) Add(newCartItem *CartItem) (*CartItem, error) {
 	_, err := cis.DB.Exec(`
 		INSERT INTO cart_items (user_id, product_id, quantity)
@@ -27,4 +35,60 @@ func (cis CartItemService) Add(newCartItem *CartItem) (*CartItem, error) {
 	}
 
 	return newCartItem, nil
+}
+
+func (cis CartItemService) GetAll(userId uuid.UUID) ([]*CartItemWithProduct, error) {
+	var cartItems []*CartItemWithProduct
+	rows, err := cis.DB.Query(`
+		SELECT products.product_id, product_name, image_url, price, quantity 
+		FROM cart_items 
+		JOIN products ON 
+		products.product_id = cart_items.product_id
+		WHERE user_id = $1
+	`, userId)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var cartItemWithProduct CartItemWithProduct
+		if err := rows.Scan(
+			&cartItemWithProduct.ProductId,
+			&cartItemWithProduct.ProductName,
+			&cartItemWithProduct.ImageUrl,
+			&cartItemWithProduct.Price,
+			&cartItemWithProduct.Quantity,
+		); err != nil {
+			return nil, fmt.Errorf("fail: %w", err)
+		}
+		cartItems = append(cartItems, &cartItemWithProduct)
+	}
+	return cartItems, nil
+}
+
+func (cis CartItemService) Count(userId uuid.UUID) (int, error) {
+	var cartItems []*CartItemWithProduct
+	rows, err := cis.DB.Query(`
+		SELECT products.product_id 
+		FROM cart_items 
+		JOIN products ON 
+		products.product_id = cart_items.product_id
+		WHERE user_id = $1
+	`, userId)
+	if err != nil {
+		return 0, fmt.Errorf("fail: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var cartItemWithProduct CartItemWithProduct
+		if err := rows.Scan(
+			&cartItemWithProduct.ProductId,
+		); err != nil {
+			return 0, fmt.Errorf("fail: %w", err)
+		}
+		cartItems = append(cartItems, &cartItemWithProduct)
+	}
+	return len(cartItems), nil
 }
