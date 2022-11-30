@@ -21,8 +21,8 @@ type CartItemWithProduct struct {
 	ProductId   uuid.UUID
 	ProductName string
 	ImageUrl    string
-	Price       int
-	Quantity    int
+	Price       float64
+	Quantity    int64
 }
 
 func (cis CartItemService) Add(newCartItem *CartItem) (*CartItem, error) {

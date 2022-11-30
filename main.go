@@ -76,6 +76,14 @@ func (sr ServiceRouter) CartItemRouter(cartItemService *models.CartItemService) 
 	sr.Route.Delete(config.BASICAPI+`/cart/{productId}`, cartItemC.Delete)
 }
 
+func (sr ServiceRouter) PaymentRouter(cartItemService *models.CartItemService, userService *models.UserService) {
+	paymentC := controllers.Payments{
+		CartItemService: cartItemService,
+		UserService:     userService,
+	}
+	sr.Route.Post(config.BASICAPI+`/payment/checkout`, paymentC.CreateCheckoutSession)
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -112,6 +120,7 @@ func main() {
 	serviceRouter.CategoryRouter(&categoryService)
 	serviceRouter.ProductRouter(&productService)
 	serviceRouter.CartItemRouter(&cartItemService)
+	serviceRouter.PaymentRouter(&cartItemService, &userService)
 
 	fmt.Println("Starting the server on :3000...")
 	http.ListenAndServe(":3000", r)
