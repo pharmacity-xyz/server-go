@@ -7,3 +7,11 @@ type AddCartItem struct {
 	ProductId uuid.UUID
 	Quantity  int
 }
+
+type UpdateCartItem struct {
+	ProductId   uuid.UUID
+	ProductName string
+	ImageUrl    string
+	Price       int
+	Quantity    int
+}

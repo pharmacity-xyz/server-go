@@ -72,8 +72,8 @@ func (sr ServiceRouter) CartItemRouter(cartItemService *models.CartItemService) 
 	sr.Route.Post(config.BASICAPI+`/cart/add`, cartItemC.Add)
 	sr.Route.Get(config.BASICAPI+`/cart`, cartItemC.GetAll)
 	sr.Route.Get(config.BASICAPI+`/cart/count`, cartItemC.Count)
-	// r.Put(config.BASICAPI+`/category`, categoryC.Update)
-	// r.Delete(config.BASICAPI+`/category/{categoryId}`, categoryC.Delete)
+	sr.Route.Put(config.BASICAPI+`/cart/update_quantity`, cartItemC.UpdateQuantity)
+	sr.Route.Delete(config.BASICAPI+`/cart/{productId}`, cartItemC.Delete)
 }
 
 func main() {

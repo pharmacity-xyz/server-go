@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/pharmacity-xyz/server-go/models"
 	"github.com/pharmacity-xyz/server-go/requests"
 	"github.com/pharmacity-xyz/server-go/responses"
@@ -104,6 +105,86 @@ func (c CartItems) Count(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Data = count
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (c CartItems) UpdateQuantity(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var request requests.UpdateCartItem
+	var response = responses.CategoryResponse[bool]{
+		Message: "",
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusBadRequest)
+		return
+	}
+
+	token, err := readCookie(r, COOKIE_TOKEN)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	userId, _, err := ParseJWT(token)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	newCartItemWithProduct := models.CartItemWithProduct{
+		ProductId:   request.ProductId,
+		ProductName: request.ProductName,
+		ImageUrl:    request.ImageUrl,
+		Price:       request.Price,
+		Quantity:    request.Quantity,
+	}
+	success, err := c.CartItemService.UpdateQuantity(&newCartItemWithProduct, userId)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = success
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (c CartItems) Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = responses.CategoryResponse[bool]{
+		Message: "",
+	}
+
+	token, err := readCookie(r, COOKIE_TOKEN)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	userId, _, err := ParseJWT(token)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	productId := chi.URLParam(r, "productId")
+	success, err := c.CartItemService.Delete(productId, userId.String())
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = success
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }

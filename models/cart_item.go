@@ -67,7 +67,7 @@ func (cis CartItemService) GetAll(userId uuid.UUID) ([]*CartItemWithProduct, err
 	return cartItems, nil
 }
 
-func (cis CartItemService) Count(userId uuid.UUID) (int, error) {
+func (cis *CartItemService) Count(userId uuid.UUID) (int, error) {
 	var cartItems []*CartItemWithProduct
 	rows, err := cis.DB.Query(`
 		SELECT products.product_id 
@@ -91,4 +91,29 @@ func (cis CartItemService) Count(userId uuid.UUID) (int, error) {
 		cartItems = append(cartItems, &cartItemWithProduct)
 	}
 	return len(cartItems), nil
+}
+
+func (cis *CartItemService) UpdateQuantity(updatedCartItem *CartItemWithProduct, userId uuid.UUID) (bool, error) {
+	_, err := cis.DB.Exec(`
+		UPDATE cart_items
+		SET quantity = $1
+		WHERE user_id = $2 AND product_id = $3
+	`, updatedCartItem.Quantity, userId, updatedCartItem.ProductId)
+	if err != nil {
+		return false, fmt.Errorf("fail: %w", err)
+	}
+
+	return true, nil
+}
+
+func (cis *CartItemService) Delete(productId string, user_id string) (bool, error) {
+	_, err := cis.DB.Exec(`
+		DELETE FROM cart_items
+		WHERE product_id = $1 AND user_id = $2
+	`, productId, user_id)
+	if err != nil {
+		return false, fmt.Errorf("fail: %w", err)
+	}
+
+	return true, nil
 }
