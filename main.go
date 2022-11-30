@@ -53,7 +53,10 @@ func (sr ServiceRouter) ProductRouter(productService *models.ProductService) {
 	productC := controllers.Products{
 		ProductService: productService,
 	}
-	sr.Route.Post(config.BASICAPI+"/product", productC.Add)
+	sr.Route.Route(config.BASICAPI, func(r chi.Router) {
+		r.Post("/product", productC.Add)
+		r.Get("/product", productC.GetAll)
+	})
 }
 
 func main() {

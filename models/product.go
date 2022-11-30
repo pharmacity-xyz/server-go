@@ -49,3 +49,33 @@ func (ps ProductService) Add(newProduct *Product) (*Product, error) {
 
 	return newProduct, nil
 }
+
+func (ps ProductService) GetAll() ([]*Product, error) {
+	var products []*Product
+	rows, err := ps.DB.Query(`
+		SELECT *
+		FROM products
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var product Product
+		if err := rows.Scan(
+			&product.ProductId,
+			&product.ProductName,
+			&product.ProductDescription,
+			&product.ImageURL,
+			&product.Stock,
+			&product.Price,
+			&product.Featured,
+			&product.CategoryId,
+		); err != nil {
+			return nil, fmt.Errorf("fail: %w", err)
+		}
+		products = append(products, &product)
+	}
+	return products, nil
+}
