@@ -153,3 +153,46 @@ func (p Products) FeaturedProducts(w http.ResponseWriter, r *http.Request) {
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
+
+func (p Products) Update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var request requests.UpdateProduct
+	var response = responses.CategoryResponse[*models.Product]{
+		Message: "",
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusBadRequest)
+		return
+	}
+
+	err = AuthorizeAdmin(r)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	newProduct := models.Product{
+		ProductId:          request.ProductId,
+		ProductName:        request.ProductName,
+		ProductDescription: request.ProductDescription,
+		ImageURL:           request.ImageURL,
+		Stock:              request.Stock,
+		Price:              request.Price,
+		Featured:           request.Featured,
+		CategoryId:         request.CategoryId,
+	}
+	product, err := p.ProductService.Update(&newProduct)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = product
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}

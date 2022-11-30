@@ -198,3 +198,29 @@ func (ps ProductService) FeaturedProducts() ([]*Product, error) {
 
 	return products, nil
 }
+
+func (ps *ProductService) Update(updatedProduct *Product) (*Product, error) {
+	_, err := ps.DB.Exec(`
+		UPDATE products
+		SET product_name = $1,
+			product_description = $2, 
+			image_url = $3, 
+			stock = $4, 
+			price = $5, 
+			featured = $6, 
+			category_id = $7
+		WHERE product_id = $8
+	`, updatedProduct.ProductName,
+		updatedProduct.ProductDescription,
+		updatedProduct.ImageURL,
+		updatedProduct.Stock,
+		updatedProduct.Price,
+		updatedProduct.Featured,
+		updatedProduct.CategoryId,
+		updatedProduct.ProductId)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+
+	return updatedProduct, nil
+}
