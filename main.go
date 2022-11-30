@@ -122,6 +122,6 @@ func main() {
 	serviceRouter.CartItemRouter(&cartItemService)
 	serviceRouter.PaymentRouter(&cartItemService, &userService)
 
-	fmt.Println("Starting the server on :3000...")
-	http.ListenAndServe(":3000", r)
+	fmt.Println("Starting the server on :8000...")
+	http.ListenAndServe(":8000", r)
 }
