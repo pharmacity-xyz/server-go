@@ -224,3 +224,15 @@ func (ps *ProductService) Update(updatedProduct *Product) (*Product, error) {
 
 	return updatedProduct, nil
 }
+
+func (ps *ProductService) Delete(productId string) error {
+	_, err := ps.DB.Exec(`
+		DELETE FROM products
+		WHERE product_id = $1
+	`, productId)
+	if err != nil {
+		return fmt.Errorf("fail: %w", err)
+	}
+
+	return nil
+}

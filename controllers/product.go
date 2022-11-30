@@ -196,3 +196,31 @@ func (p Products) Update(w http.ResponseWriter, r *http.Request) {
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
+
+func (p Products) Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = responses.CategoryResponse[bool]{
+		Message: "",
+	}
+	productId := chi.URLParam(r, "productId")
+
+	err := AuthorizeAdmin(r)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	err = p.ProductService.Delete(productId)
+	if err != nil {
+		response.Message = err.Error()
+		response.Success = false
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	response.Data = true
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
