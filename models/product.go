@@ -102,3 +102,67 @@ func (ps ProductService) GetProductByProductId(productId string) (*Product, erro
 
 	return &product, nil
 }
+
+func (ps ProductService) GetProductByCategoryId(categoryId string) ([]*Product, error) {
+	var products []*Product
+
+	rows, err := ps.DB.Query(`
+		SELECT * 
+		FROM products
+		WHERE category_id = $1
+	`, categoryId)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+
+	for rows.Next() {
+		var product Product
+		if err := rows.Scan(
+			&product.ProductId,
+			&product.ProductName,
+			&product.ProductDescription,
+			&product.ImageURL,
+			&product.Stock,
+			&product.Price,
+			&product.Featured,
+			&product.CategoryId,
+		); err != nil {
+			return nil, fmt.Errorf("fail: %w", err)
+		}
+		products = append(products, &product)
+	}
+
+	return products, nil
+}
+
+func (ps ProductService) Search(searchWord string) ([]*Product, error) {
+	var products []*Product
+
+	rows, err := ps.DB.Query(`
+		SELECT * 
+		FROM products
+		WHERE LOWER(product_name) LIKE $1
+	`, "%"+searchWord+"%")
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+
+	for rows.Next() {
+		var product Product
+		if err := rows.Scan(
+			&product.ProductId,
+			&product.ProductName,
+			&product.ProductDescription,
+			&product.ImageURL,
+			&product.Stock,
+			&product.Price,
+			&product.Featured,
+			&product.CategoryId,
+		); err != nil {
+			return nil, fmt.Errorf("fail: %w", err)
+		}
+		products = append(products, &product)
+	}
+
+	return products, nil
+}

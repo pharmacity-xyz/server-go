@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -92,6 +93,45 @@ func (p Products) GetProductByProductId(w http.ResponseWriter, r *http.Request) 
 	}
 
 	response.Data = product
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (p Products) GetProductByCategoryId(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = types.ServiceResponse[[]*models.Product]{
+		Message: "",
+	}
+
+	categoryId := chi.URLParam(r, "categoryId")
+	products, err := p.ProductService.GetProductByCategoryId(categoryId)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = products
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (p Products) Search(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = types.ServiceResponse[[]*models.Product]{
+		Message: "",
+	}
+
+	searchWord := chi.URLParam(r, "searchWord")
+	lowerSearchWord := strings.ToLower(searchWord)
+	products, err := p.ProductService.Search(lowerSearchWord)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = products
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }

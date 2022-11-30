@@ -57,6 +57,8 @@ func (sr ServiceRouter) ProductRouter(productService *models.ProductService) {
 		r.Post("/product", productC.Add)
 		r.Get("/product", productC.GetAll)
 		r.Get("/product/{productId}", productC.GetProductByProductId)
+		r.Get("/product/category/{categoryId}", productC.GetProductByCategoryId)
+		r.Get("/product/search/{searchWord}", productC.Search)
 	})
 }
 
