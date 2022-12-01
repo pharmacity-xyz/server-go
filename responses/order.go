@@ -8,7 +8,7 @@ import (
 
 type OrderOverviewResponse struct {
 	OrderId         uuid.UUID
-	OrderData       time.Time
+	OrderDate       time.Time
 	TotalPrice      float64
 	Product         string
 	ProductImageUrl string
