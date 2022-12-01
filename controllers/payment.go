@@ -117,6 +117,7 @@ func (p Payments) FulfilOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check event type
 	if event.Type == "checkout.session.completed" {
 		session := stripe.CheckoutSession{}
 
