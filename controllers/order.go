@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/pharmacity-xyz/server-go/models"
@@ -93,6 +94,48 @@ func (o Orders) GetOrdersForAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product, err := o.OrderService.GetOrdersForAdmin()
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = product
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (o Orders) GetOrdersPerMonth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = types.ServiceResponse[[]uint]{
+		Message: "",
+	}
+
+	err := AuthorizeAdmin(r)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	q := r.URL.Query()
+	yearStr := q.Get("year")
+	monthStr := q.Get("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	product, err := o.OrderService.GetOrderPerMonth(year, month)
 	if err != nil {
 		response.Message = err.Error()
 		responses.JSONError(w, response, http.StatusInternalServerError)

@@ -206,3 +206,62 @@ func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.U
 
 	return true, nil
 }
+
+func (os OrderService) GetOrderPerMonth(year int, month int) ([]uint, error) {
+	var countOrders []uint
+	response := []responses.OrderOverviewResponse{}
+
+	rows, err := os.DB.Query(`
+		SELECT orders.order_id, order_date, orders.total_price, product_name, image_url FROM orders
+		JOIN order_items ON order_items.order_id = orders.order_id
+		JOIN products ON products.product_id = order_items.product_id
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+	defer rows.Close()
+
+	orderId := uuid.UUID{}
+
+	for rows.Next() {
+		var orderOverviewRes responses.OrderOverviewResponse
+		if err := rows.Scan(
+			&orderOverviewRes.OrderId,
+			&orderOverviewRes.OrderDate,
+			&orderOverviewRes.TotalPrice,
+			&orderOverviewRes.Product,
+			&orderOverviewRes.ProductImageUrl,
+		); err != nil {
+			return nil, fmt.Errorf("fail: %w", err)
+		}
+		if orderId == orderOverviewRes.OrderId {
+			continue
+		}
+		orderId = orderOverviewRes.OrderId
+		response = append(response, orderOverviewRes)
+	}
+
+	if year != 0 && month == 0 {
+		orderMonths := make([]uint, 12)
+		for i := 0; i < len(response); i++ {
+			if response[i].OrderDate.Year() == year {
+				month := response[i].OrderDate.Month()
+				orderMonths[month-1] += 1
+			}
+		}
+		countOrders = append(countOrders, orderMonths...)
+	}
+
+	if year != 0 && month != 0 {
+		orderDates := make([]uint, 31)
+		for i := 0; i < len(response); i++ {
+			if response[i].OrderDate.Year() == year && int(response[i].OrderDate.Month()) == month {
+				day := response[i].OrderDate.Day()
+				orderDates[day-1] += 1
+			}
+		}
+		countOrders = append(countOrders, orderDates...)
+	}
+
+	return countOrders, nil
+}
