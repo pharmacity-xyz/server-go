@@ -55,6 +55,39 @@ func (os OrderService) GetOrders(userId uuid.UUID) (*[]responses.OrderOverviewRe
 	return &response, nil
 }
 
+func (os OrderService) GetOrderDetails(userId uuid.UUID, orderId string) (*[]responses.OrderDetailsResponse, error) {
+	// var response []responses.OrderDetailsResponse
+
+	rows, err := os.DB.Query(`
+		SELECT orders.order_id, order_date, orders.total_price, product_name, image_url FROM orders
+		JOIN order_items ON order_items.order_id = orders.order_id
+		JOIN products ON products.product_id = order_items.product_id
+		WHERE user_id = $1
+	`, userId)
+
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		// 	var orderOverviewRes responses.OrderOverviewResponse
+		// 	if err := rows.Scan(
+		// 		&orderOverviewRes.OrderId,
+		// 		&orderOverviewRes.OrderDate,
+		// 		&orderOverviewRes.TotalPrice,
+		// 		&orderOverviewRes.Product,
+		// 		&orderOverviewRes.ProductImageUrl,
+		// 	); err != nil {
+		// 		return nil, fmt.Errorf("fail: %w", err)
+		// 	}
+		// 	response = append(response, orderOverviewRes)
+	}
+
+	return nil, nil
+}
+
 func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.UUID) (bool, error) {
 	var totalPrice float64
 

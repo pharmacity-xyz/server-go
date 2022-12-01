@@ -13,3 +13,9 @@ type OrderOverviewResponse struct {
 	Product         string
 	ProductImageUrl string
 }
+
+type OrderDetailsResponse struct {
+	OrderDate                   time.Time
+	TotalPrice                  float64
+	OrderDetailsProductResponse OrderDetailsProductResponse
+}
