@@ -76,12 +76,20 @@ func (sr ServiceRouter) CartItemRouter(cartItemService *models.CartItemService) 
 	sr.Route.Delete(config.BASICAPI+`/cart/{productId}`, cartItemC.Delete)
 }
 
-func (sr ServiceRouter) PaymentRouter(cartItemService *models.CartItemService, userService *models.UserService) {
+func (sr ServiceRouter) PaymentRouter(
+	cartItemService *models.CartItemService,
+	userService *models.UserService,
+	paymentService *models.PaymentService,
+	orderService *models.OrderService,
+) {
 	paymentC := controllers.Payments{
 		CartItemService: cartItemService,
 		UserService:     userService,
+		PaymentService:  paymentService,
+		OrderService:    orderService,
 	}
 	sr.Route.Post(config.BASICAPI+`/payment/checkout`, paymentC.CreateCheckoutSession)
+	sr.Route.Post(config.BASICAPI+`/payment`, paymentC.FulfilOrder)
 }
 
 func main() {
@@ -114,13 +122,19 @@ func main() {
 	cartItemService := models.CartItemService{
 		DB: db,
 	}
+	paymentService := models.PaymentService{
+		DB: db,
+	}
+	orderService := models.OrderService{
+		DB: db,
+	}
 
 	serviceRouter.AuthRouter(&userService)
 	serviceRouter.UserRouter(&userService)
 	serviceRouter.CategoryRouter(&categoryService)
 	serviceRouter.ProductRouter(&productService)
 	serviceRouter.CartItemRouter(&cartItemService)
-	serviceRouter.PaymentRouter(&cartItemService, &userService)
+	serviceRouter.PaymentRouter(&cartItemService, &userService, &paymentService, &orderService)
 
 	fmt.Println("Starting the server on :8000...")
 	http.ListenAndServe(":8000", r)

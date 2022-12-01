@@ -2,17 +2,23 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/pharmacity-xyz/server-go/models"
 	"github.com/pharmacity-xyz/server-go/responses"
-	"github.com/stripe/stripe-go/v74"
-	"github.com/stripe/stripe-go/v74/checkout/session"
+	"github.com/stripe/stripe-go/v73"
+	"github.com/stripe/stripe-go/v73/checkout/session"
+	"github.com/stripe/stripe-go/v73/webhook"
 )
 
 type Payments struct {
 	CartItemService *models.CartItemService
 	UserService     *models.UserService
+	PaymentService  *models.PaymentService
+	OrderService    *models.OrderService
 }
 
 func (p Payments) CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +69,8 @@ func (p Payments) CreateCheckoutSession(w http.ResponseWriter, r *http.Request) 
 
 	}
 
-	stripe.Key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
+	stripeSecret := os.Getenv("STRIPE_SECRET_KEY")
+	stripe.Key = stripeSecret
 
 	userEmail, err := p.UserService.GetUserEmail(userId)
 	if err != nil {
@@ -88,4 +95,57 @@ func (p Payments) CreateCheckoutSession(w http.ResponseWriter, r *http.Request) 
 	response.Data = s.URL
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
+}
+
+func (p Payments) FulfilOrder(w http.ResponseWriter, r *http.Request) {
+
+	const MaxBodyBytes = int64(65536)
+	r.Body = http.MaxBytesReader(w, r.Body, MaxBodyBytes)
+	payload, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		return
+	}
+
+	signatureHeader := r.Header.Get("Stripe-Signature")
+
+	endpointSecret := os.Getenv("ENDPOINT_SECRET")
+	event, err := webhook.ConstructEvent(payload, signatureHeader, endpointSecret)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	session := stripe.CheckoutSession{}
+
+	err = json.Unmarshal(event.Data.Raw, &session)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	userId, err := p.UserService.GetUserByEmail(session.CustomerEmail)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	products, err := p.CartItemService.GetAll(userId)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = p.OrderService.PlaceOrder(products, userId)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusOK)
+
 }

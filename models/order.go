@@ -24,7 +24,9 @@ type Order struct {
 }
 
 func (o OrderService) GetOrders() ([]*responses.OrderOverviewResponse, error) {
-	response := responses.OrderOverviewResponse
+	// response := responses.OrderOverviewResponse
+
+	return nil, nil
 }
 
 func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.UUID) (bool, error) {
@@ -55,13 +57,24 @@ func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.U
 
 	_, err := os.DB.Exec(`
 		INSERT INTO orders (order_id, user_id, total_price, ship_address, order_data, shipped_date)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-	`, order.OrderId, order.UserId, order.TotalPrice, order.ShipAddress, order.OrderDate, order.ShippedDate, order.OrderItems)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`, order.OrderId,
+		order.UserId,
+		order.TotalPrice,
+		order.ShipAddress,
+		order.OrderDate,
+		order.ShippedDate)
 	if err != nil {
-		return nil, fmt.Errorf("fail: %w", err)
+		return false, fmt.Errorf("fail: %w", err)
 	}
 
-	return newCategory, nil
+	_, err = os.DB.Exec(`
+		DELETE FROM cart_items
+		WHERE user_id = $1
+	`, userId)
+	if err != nil {
+		return false, fmt.Errorf("fail: %w", err)
+	}
 
 	return true, nil
 }

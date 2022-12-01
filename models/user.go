@@ -145,6 +145,21 @@ func (us *UserService) GetUserEmail(userId uuid.UUID) (string, error) {
 	return userEmail, nil
 }
 
+func (us *UserService) GetUserByEmail(email string) (uuid.UUID, error) {
+	var userId uuid.UUID
+	row := us.DB.QueryRow(`
+		SELECT user_id
+		FROM users
+		WHERE email = $1
+	`, email)
+	err := row.Scan(&userId)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("fail: %w", err)
+	}
+
+	return userId, nil
+}
+
 func hash(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
