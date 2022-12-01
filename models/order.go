@@ -20,7 +20,6 @@ type Order struct {
 	ShipAddress string
 	OrderDate   time.Time
 	ShippedDate time.Time
-	OrderItems  []OrderItem
 }
 
 func (o OrderService) GetOrders() ([]*responses.OrderOverviewResponse, error) {
@@ -36,15 +35,6 @@ func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.U
 		totalPrice += products[i].Price * float64(products[i].Quantity)
 	}
 
-	var orderItems []OrderItem
-	for i := 0; i < len(products); i++ {
-		orderItems = append(orderItems, OrderItem{
-			ProductId:  products[i].ProductId,
-			Quantity:   products[i].Quantity,
-			TotalPrice: totalPrice,
-		})
-	}
-
 	order := Order{
 		OrderId:     uuid.New(),
 		UserId:      userId,
@@ -52,7 +42,6 @@ func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.U
 		ShipAddress: "Tokyo",
 		OrderDate:   time.Now(),
 		ShippedDate: time.Now(),
-		OrderItems:  orderItems,
 	}
 
 	_, err := os.DB.Exec(`
@@ -68,6 +57,19 @@ func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.U
 		return false, fmt.Errorf("fail: %w", err)
 	}
 
+	for i := 0; i < len(products); i++ {
+		_, err := os.DB.Exec(`
+		INSERT INTO order_items (order_id, product_id, quantity, total_price)
+		   VALUES ($1, $2, $3, $4)
+		`, order.OrderId,
+			products[i].ProductId,
+			products[i].Quantity,
+			products[i].Price*float64(products[i].Quantity),
+		)
+		if err != nil {
+			return false, fmt.Errorf("fail: %w", err)
+		}
+	}
 	_, err = os.DB.Exec(`
 		DELETE FROM cart_items
 		WHERE user_id = $1
