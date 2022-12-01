@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
@@ -264,4 +265,76 @@ func (os OrderService) GetOrderPerMonth(year int, month int) ([]uint, error) {
 	}
 
 	return countOrders, nil
+}
+
+type OrderDatailWithCategory struct {
+	OrderId         uuid.UUID
+	OrderDate       time.Time
+	TotalPrice      float64
+	Product         string
+	ProductImageUrl string
+	CategoryName    string
+}
+
+func (os OrderService) GetOrdersForPieChart(categories []*Category) (*responses.OrderByCategoryResponse, error) {
+	var res responses.OrderByCategoryResponse
+	response := []OrderDatailWithCategory{}
+
+	rows, err := os.DB.Query(`
+		SELECT orders.order_id, order_date, orders.total_price, product_name, image_url, categories.name FROM orders
+		JOIN order_items ON order_items.order_id = orders.order_id
+		JOIN products ON products.product_id = order_items.product_id
+		JOIN categories ON categories.category_id = products.category_id
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("fail: %w", err)
+	}
+	defer rows.Close()
+
+	orderId := uuid.UUID{}
+
+	for rows.Next() {
+		var orderOverviewRes OrderDatailWithCategory
+		if err := rows.Scan(
+			&orderOverviewRes.OrderId,
+			&orderOverviewRes.OrderDate,
+			&orderOverviewRes.TotalPrice,
+			&orderOverviewRes.Product,
+			&orderOverviewRes.ProductImageUrl,
+			&orderOverviewRes.CategoryName,
+		); err != nil {
+			return nil, fmt.Errorf("fail: %w", err)
+		}
+		if orderId == orderOverviewRes.OrderId {
+			continue
+		}
+		orderId = orderOverviewRes.OrderId
+		response = append(response, orderOverviewRes)
+	}
+
+	labelList := []string{}
+	colorList := []string{}
+	numberList := make([]int, len(categories))
+
+	for i := 0; i < len(categories); i++ {
+		labelList = append(labelList, categories[i].Name)
+		colorList = append(colorList, fmt.Sprintf("rgb(%d, %d, %d)",
+			rand.Intn(255),
+			rand.Intn(255),
+			rand.Intn(255)))
+	}
+
+	for i := 0; i < len(response); i++ {
+		for j := 0; j < len(labelList); j++ {
+			if labelList[j] == response[i].CategoryName {
+				numberList[j] += 1
+			}
+		}
+	}
+
+	res.Labels = labelList
+	res.Colors = colorList
+	res.Numbers = numberList
+
+	return &res, nil
 }

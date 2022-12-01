@@ -76,15 +76,17 @@ func (sr ServiceRouter) CartItemRouter(cartItemService *models.CartItemService) 
 	sr.Route.Delete(config.BASICAPI+`/cart/{productId}`, cartItemC.Delete)
 }
 
-func (sr ServiceRouter) OrderRouter(orderService *models.OrderService) {
+func (sr ServiceRouter) OrderRouter(orderService *models.OrderService, categoryService *models.CategoryService) {
 	orderC := controllers.Orders{
-		OrderService: orderService,
+		CategoryService: categoryService,
+		OrderService:    orderService,
 	}
-	// sr.Route.Post(config.BASICAPI+`/cart/add`, cartItemC.Add)
 	sr.Route.Get(config.BASICAPI+`/order`, orderC.GetOrders)
 	sr.Route.Get(config.BASICAPI+`/order/{orderId}`, orderC.GetOrderDetails)
 	sr.Route.Get(config.BASICAPI+`/order/admin`, orderC.GetOrdersForAdmin)
 	sr.Route.Get(config.BASICAPI+`/order/charts`, orderC.GetOrdersPerMonth)
+	sr.Route.Get(config.BASICAPI+`/order/charts`, orderC.GetOrdersPerMonth)
+	sr.Route.Get(config.BASICAPI+`/order/piecharts`, orderC.GetOrdersForPieChart)
 	// sr.Route.Put(config.BASICAPI+`/cart/update_quantity`, cartItemC.UpdateQuantity)
 	// sr.Route.Delete(config.BASICAPI+`/cart/{productId}`, cartItemC.Delete)
 }
@@ -148,7 +150,7 @@ func main() {
 	serviceRouter.ProductRouter(&productService)
 	serviceRouter.CartItemRouter(&cartItemService)
 	serviceRouter.PaymentRouter(&cartItemService, &userService, &paymentService, &orderService)
-	serviceRouter.OrderRouter(&orderService)
+	serviceRouter.OrderRouter(&orderService, &categoryService)
 
 	fmt.Println("Starting the server on :8000...")
 	http.ListenAndServe(":8000", r)

@@ -19,3 +19,9 @@ type OrderDetailsResponse struct {
 	TotalPrice                  float64
 	OrderDetailsProductResponse []OrderDetailsProductResponse
 }
+
+type OrderByCategoryResponse struct {
+	Labels  []string
+	Colors  []string
+	Numbers []int
+}

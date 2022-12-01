@@ -12,7 +12,8 @@ import (
 )
 
 type Orders struct {
-	OrderService *models.OrderService
+	CategoryService *models.CategoryService
+	OrderService    *models.OrderService
 }
 
 func (o Orders) GetOrders(w http.ResponseWriter, r *http.Request) {
@@ -143,6 +144,38 @@ func (o Orders) GetOrdersPerMonth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Data = product
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
+
+func (o Orders) GetOrdersForPieChart(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = types.ServiceResponse[*responses.OrderByCategoryResponse]{
+		Message: "",
+	}
+
+	err := AuthorizeAdmin(r)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	categories, err := o.CategoryService.GetAll()
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	res, err := o.OrderService.GetOrdersForPieChart(categories)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = res
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
