@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	"github.com/pharmacity-xyz/server-go/config"
 	"github.com/pharmacity-xyz/server-go/controllers"
@@ -122,6 +123,10 @@ func main() {
 	r := chi.NewRouter()
 	serviceRouter := ServiceRouter{Route: r}
 	r.Use(middleware.Logger)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"https://*", "http://*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	}))
 
 	serviceRouter.HealchCheckRouter()
 
@@ -153,5 +158,6 @@ func main() {
 	serviceRouter.OrderRouter(&orderService, &categoryService)
 
 	fmt.Println("Starting the server on :8000...")
+
 	http.ListenAndServe(":8000", r)
 }
