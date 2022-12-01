@@ -78,3 +78,28 @@ func (o Orders) GetOrderDetails(w http.ResponseWriter, r *http.Request) {
 	response.Success = true
 	json.NewEncoder(w).Encode(response)
 }
+
+func (o Orders) GetOrdersForAdmin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response = types.ServiceResponse[*[]responses.OrderOverviewResponse]{
+		Message: "",
+	}
+
+	err := AuthorizeAdmin(r)
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusUnauthorized)
+		return
+	}
+
+	product, err := o.OrderService.GetOrdersForAdmin()
+	if err != nil {
+		response.Message = err.Error()
+		responses.JSONError(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	response.Data = product
+	response.Success = true
+	json.NewEncoder(w).Encode(response)
+}
