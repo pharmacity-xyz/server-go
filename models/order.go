@@ -38,6 +38,8 @@ func (os OrderService) GetOrders(userId uuid.UUID) (*[]responses.OrderOverviewRe
 
 	defer rows.Close()
 
+	orderId := uuid.UUID{}
+
 	for rows.Next() {
 		var orderOverviewRes responses.OrderOverviewResponse
 		if err := rows.Scan(
@@ -49,21 +51,36 @@ func (os OrderService) GetOrders(userId uuid.UUID) (*[]responses.OrderOverviewRe
 		); err != nil {
 			return nil, fmt.Errorf("fail: %w", err)
 		}
+		if orderId == orderOverviewRes.OrderId {
+			continue
+		}
+		orderId = orderOverviewRes.OrderId
 		response = append(response, orderOverviewRes)
 	}
 
 	return &response, nil
 }
 
-func (os OrderService) GetOrderDetails(userId uuid.UUID, orderId string) (*[]responses.OrderDetailsResponse, error) {
-	// var response []responses.OrderDetailsResponse
+type OrderDetail struct {
+	OrderDate           time.Time
+	OrderTotalPrice     float64
+	ProductId           uuid.UUID
+	ProductName         string
+	ImageUrl            string
+	Quantity            int64
+	OrderItemTotalPrice float64
+}
+
+func (os OrderService) GetOrderDetails(userId uuid.UUID, orderId string) (*responses.OrderDetailsResponse, error) {
+	var response responses.OrderDetailsResponse
 
 	rows, err := os.DB.Query(`
-		SELECT orders.order_id, order_date, orders.total_price, product_name, image_url FROM orders
-		JOIN order_items ON order_items.order_id = orders.order_id
+		SELECT order_date, orders.total_price, order_items.product_id, product_name, image_url, order_items.quantity, order_items.total_price 
+		FROM orders
+		inner JOIN order_items ON order_items.order_id = orders.order_id
 		JOIN products ON products.product_id = order_items.product_id
-		WHERE user_id = $1
-	`, userId)
+		WHERE user_id = $1 AND orders.order_id = $2
+	`, userId, orderId)
 
 	if err != nil {
 		return nil, fmt.Errorf("fail: %w", err)
@@ -71,21 +88,35 @@ func (os OrderService) GetOrderDetails(userId uuid.UUID, orderId string) (*[]res
 
 	defer rows.Close()
 
+	// newOrderId := uuid.UUID{}
+	var orderDetail OrderDetail
+
 	for rows.Next() {
-		// 	var orderOverviewRes responses.OrderOverviewResponse
-		// 	if err := rows.Scan(
-		// 		&orderOverviewRes.OrderId,
-		// 		&orderOverviewRes.OrderDate,
-		// 		&orderOverviewRes.TotalPrice,
-		// 		&orderOverviewRes.Product,
-		// 		&orderOverviewRes.ProductImageUrl,
-		// 	); err != nil {
-		// 		return nil, fmt.Errorf("fail: %w", err)
-		// 	}
-		// 	response = append(response, orderOverviewRes)
+		if err := rows.Scan(
+			&orderDetail.OrderDate,
+			&orderDetail.OrderTotalPrice,
+			&orderDetail.ProductId,
+			&orderDetail.ProductName,
+			&orderDetail.ImageUrl,
+			&orderDetail.Quantity,
+			&orderDetail.OrderItemTotalPrice,
+		); err != nil {
+			return nil, fmt.Errorf("fail: %w", err)
+		}
+		orderDetailProductResponse := responses.OrderDetailsProductResponse{
+			ProductId:   orderDetail.ProductId,
+			ProductName: orderDetail.ProductName,
+			ImageUrl:    orderDetail.ImageUrl,
+			Quantity:    orderDetail.Quantity,
+			TotalPrice:  orderDetail.OrderItemTotalPrice,
+		}
+		response.OrderDetailsProductResponse = append(response.OrderDetailsProductResponse, orderDetailProductResponse)
 	}
 
-	return nil, nil
+	response.OrderDate = orderDetail.OrderDate
+	response.TotalPrice = orderDetail.OrderTotalPrice
+
+	return &response, nil
 }
 
 func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.UUID) (bool, error) {

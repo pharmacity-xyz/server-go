@@ -82,7 +82,7 @@ func (sr ServiceRouter) OrderRouter(orderService *models.OrderService) {
 	}
 	// sr.Route.Post(config.BASICAPI+`/cart/add`, cartItemC.Add)
 	sr.Route.Get(config.BASICAPI+`/order`, orderC.GetOrders)
-	// sr.Route.Get(config.BASICAPI+`/cart/count`, cartItemC.Count)
+	sr.Route.Get(config.BASICAPI+`/order/{orderId}`, orderC.GetOrderDetails)
 	// sr.Route.Put(config.BASICAPI+`/cart/update_quantity`, cartItemC.UpdateQuantity)
 	// sr.Route.Delete(config.BASICAPI+`/cart/{productId}`, cartItemC.Delete)
 }

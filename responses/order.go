@@ -17,5 +17,5 @@ type OrderOverviewResponse struct {
 type OrderDetailsResponse struct {
 	OrderDate                   time.Time
 	TotalPrice                  float64
-	OrderDetailsProductResponse OrderDetailsProductResponse
+	OrderDetailsProductResponse []OrderDetailsProductResponse
 }
