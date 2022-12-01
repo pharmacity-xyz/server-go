@@ -146,18 +146,26 @@ func (us *UserService) GetUserEmail(userId uuid.UUID) (string, error) {
 }
 
 func (us *UserService) GetUserByEmail(email string) (uuid.UUID, error) {
-	var userId uuid.UUID
+	var user User
 	row := us.DB.QueryRow(`
-		SELECT user_id
+		SELECT *
 		FROM users
 		WHERE email = $1
 	`, email)
-	err := row.Scan(&userId)
+	err := row.Scan(&user.UserId,
+		&user.Email,
+		&user.PasswordHash,
+		&user.FirstName,
+		&user.LastName,
+		&user.City,
+		&user.Country,
+		&user.CompanyName,
+		&user.Role)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("fail: %w", err)
 	}
 
-	return userId, nil
+	return user.UserId, nil
 }
 
 func hash(password string) (string, error) {

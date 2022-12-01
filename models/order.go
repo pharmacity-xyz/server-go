@@ -56,7 +56,7 @@ func (os OrderService) PlaceOrder(products []*CartItemWithProduct, userId uuid.U
 	}
 
 	_, err := os.DB.Exec(`
-		INSERT INTO orders (order_id, user_id, total_price, ship_address, order_data, shipped_date)
+		INSERT INTO orders (order_id, user_id, total_price, ship_address, order_date, shipped_date)
 		VALUES ($1, $2, $3, $4, $5, $6)
 	`, order.OrderId,
 		order.UserId,

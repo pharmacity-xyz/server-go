@@ -117,35 +117,37 @@ func (p Payments) FulfilOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session := stripe.CheckoutSession{}
+	if event.Type == "checkout.session.completed" {
+		session := stripe.CheckoutSession{}
 
-	err = json.Unmarshal(event.Data.Raw, &session)
-	if err != nil {
-		fmt.Printf("error: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		err = json.Unmarshal(event.Data.Raw, &session)
+		if err != nil {
+			fmt.Printf("error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		newUserId, err := p.UserService.GetUserByEmail(session.CustomerEmail)
+		if err != nil {
+			fmt.Printf("error to get user by email: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		products, err := p.CartItemService.GetAll(newUserId)
+		if err != nil {
+			fmt.Printf("error to get cartitems: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		_, err = p.OrderService.PlaceOrder(products, newUserId)
+		if err != nil {
+			fmt.Printf("error to place order: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	}
-
-	userId, err := p.UserService.GetUserByEmail(session.CustomerEmail)
-	if err != nil {
-		fmt.Printf("error: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	products, err := p.CartItemService.GetAll(userId)
-	if err != nil {
-		fmt.Printf("error: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	_, err = p.OrderService.PlaceOrder(products, userId)
-	if err != nil {
-		fmt.Printf("error: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	w.WriteHeader(http.StatusOK)
 
 }
