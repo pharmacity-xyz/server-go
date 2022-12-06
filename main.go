@@ -166,9 +166,9 @@ func main() {
 	serviceRouter.PaymentRouter(&cartItemService, &userService, &paymentService, &orderService)
 	serviceRouter.OrderRouter(&orderService, &categoryService)
 
-	fmt.Println("Starting the server on :8000...")
-
 	mode := os.Getenv("MODE")
+	fmt.Printf("Starting the server on :8000... %v", mode)
+
 	if mode == "PRODUCTION" {
 		http.ListenAndServe(":0000", r)
 	} else {
