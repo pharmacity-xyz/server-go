@@ -35,7 +35,15 @@ func DefaultPostgresConfig() PostgresConfig {
 }
 
 func Open() (*sql.DB, error) {
-	dbString := os.Getenv("DB_STRING")
+	mode := os.Getenv("MODE")
+	var dbString string
+
+	if mode == "PRODUCTION" {
+		dbString = os.Getenv("DB_STRING_PRODUCTION")
+	} else {
+		dbString = os.Getenv("DB_STRING_LOCAL")
+	}
+
 	db, err := sql.Open("pgx", dbString)
 	if err != nil {
 		return nil, fmt.Errorf("open: %w", err)
