@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -167,5 +168,10 @@ func main() {
 
 	fmt.Println("Starting the server on :8000...")
 
-	http.ListenAndServe(":8000", r)
+	mode := os.Getenv("MODE")
+	if mode == "PRODUCTION" {
+		http.ListenAndServe(":0000", r)
+	} else {
+		http.ListenAndServe(":8000", r)
+	}
 }
