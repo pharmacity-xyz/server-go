@@ -36,33 +36,37 @@ func (sr ServiceRouter) UserRouter(userService *models.UserService) {
 	userC := controllers.Users{
 		UserService: userService,
 	}
-	sr.Route.Get(config.BASICAPI+`/user`, userC.GetAll)
-	sr.Route.Put(config.BASICAPI+`/user`, userC.Update)
+	sr.Route.Route(config.BASICAPI+`/user`, func(r chi.Router) {
+		r.Get(`/`, userC.GetAll)
+		r.Put(`/`, userC.Update)
+	})
 }
 
 func (sr ServiceRouter) CategoryRouter(categoryService *models.CategoryService) {
 	categoryC := controllers.Categories{
 		CategoryService: categoryService,
 	}
-	sr.Route.Get(config.BASICAPI+`/category`, categoryC.GetAll)
-	sr.Route.Post(config.BASICAPI+`/category`, categoryC.Add)
-	sr.Route.Put(config.BASICAPI+`/category`, categoryC.Update)
-	sr.Route.Delete(config.BASICAPI+`/category/{categoryId}`, categoryC.Delete)
+	sr.Route.Route(config.BASICAPI+`/category`, func(r chi.Router) {
+		r.Get(`/`, categoryC.GetAll)
+		r.Post(`/`, categoryC.Add)
+		r.Put(`/`, categoryC.Update)
+		r.Delete(`/{categoryId}`, categoryC.Delete)
+	})
 }
 
 func (sr ServiceRouter) ProductRouter(productService *models.ProductService) {
 	productC := controllers.Products{
 		ProductService: productService,
 	}
-	sr.Route.Route(config.BASICAPI, func(r chi.Router) {
-		r.Post("/product", productC.Add)
-		r.Get("/product", productC.GetAll)
-		r.Get("/product/{productId}", productC.GetProductByProductId)
-		r.Get("/product/category/{categoryId}", productC.GetProductByCategoryId)
-		r.Get("/product/search/{searchWord}", productC.Search)
-		r.Get("/product/featured", productC.FeaturedProducts)
-		r.Put("/product", productC.Update)
-		r.Delete("/product/{productId}", productC.Delete)
+	sr.Route.Route(config.BASICAPI+`/product`, func(r chi.Router) {
+		r.Post("/", productC.Add)
+		r.Get("/", productC.GetAll)
+		r.Get("/{productId}", productC.GetProductByProductId)
+		r.Get("/category/{categoryId}", productC.GetProductByCategoryId)
+		r.Get("/search/{searchWord}", productC.Search)
+		r.Get("/featured", productC.FeaturedProducts)
+		r.Put("/", productC.Update)
+		r.Delete("/{productId}", productC.Delete)
 	})
 }
 
@@ -70,11 +74,13 @@ func (sr ServiceRouter) CartItemRouter(cartItemService *models.CartItemService) 
 	cartItemC := controllers.CartItems{
 		CartItemService: cartItemService,
 	}
-	sr.Route.Post(config.BASICAPI+`/cart/add`, cartItemC.Add)
-	sr.Route.Get(config.BASICAPI+`/cart`, cartItemC.GetAll)
-	sr.Route.Get(config.BASICAPI+`/cart/count`, cartItemC.Count)
-	sr.Route.Put(config.BASICAPI+`/cart/update_quantity`, cartItemC.UpdateQuantity)
-	sr.Route.Delete(config.BASICAPI+`/cart/{productId}`, cartItemC.Delete)
+	sr.Route.Route(config.BASICAPI+`/cart`, func(r chi.Router) {
+		r.Post(`/add`, cartItemC.Add)
+		r.Get(`/`, cartItemC.GetAll)
+		r.Get(`/count`, cartItemC.Count)
+		r.Put(`/update_quantity`, cartItemC.UpdateQuantity)
+		r.Delete(`/{productId}`, cartItemC.Delete)
+	})
 }
 
 func (sr ServiceRouter) OrderRouter(orderService *models.OrderService, categoryService *models.CategoryService) {
@@ -82,14 +88,13 @@ func (sr ServiceRouter) OrderRouter(orderService *models.OrderService, categoryS
 		CategoryService: categoryService,
 		OrderService:    orderService,
 	}
-	sr.Route.Get(config.BASICAPI+`/order`, orderC.GetOrders)
-	sr.Route.Get(config.BASICAPI+`/order/{orderId}`, orderC.GetOrderDetails)
-	sr.Route.Get(config.BASICAPI+`/order/admin`, orderC.GetOrdersForAdmin)
-	sr.Route.Get(config.BASICAPI+`/order/charts`, orderC.GetOrdersPerMonth)
-	sr.Route.Get(config.BASICAPI+`/order/charts`, orderC.GetOrdersPerMonth)
-	sr.Route.Get(config.BASICAPI+`/order/piecharts`, orderC.GetOrdersForPieChart)
-	// sr.Route.Put(config.BASICAPI+`/cart/update_quantity`, cartItemC.UpdateQuantity)
-	// sr.Route.Delete(config.BASICAPI+`/cart/{productId}`, cartItemC.Delete)
+	sr.Route.Route(config.BASICAPI+`/order`, func(r chi.Router) {
+		r.Get(`/`, orderC.GetOrders)
+		r.Get(`/{orderId}`, orderC.GetOrderDetails)
+		r.Get(`/admin`, orderC.GetOrdersForAdmin)
+		r.Get(`/charts`, orderC.GetOrdersPerMonth)
+		r.Get(`/piecharts`, orderC.GetOrdersForPieChart)
+	})
 }
 
 func (sr ServiceRouter) PaymentRouter(
@@ -104,8 +109,10 @@ func (sr ServiceRouter) PaymentRouter(
 		PaymentService:  paymentService,
 		OrderService:    orderService,
 	}
-	sr.Route.Post(config.BASICAPI+`/payment/checkout`, paymentC.CreateCheckoutSession)
-	sr.Route.Post(config.BASICAPI+`/payment`, paymentC.FulfilOrder)
+	sr.Route.Route(config.BASICAPI+`/payment`, func(r chi.Router) {
+		r.Post(`/checkout`, paymentC.CreateCheckoutSession)
+		r.Post(`/`, paymentC.FulfilOrder)
+	})
 }
 
 func main() {
