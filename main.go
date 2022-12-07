@@ -166,12 +166,13 @@ func main() {
 	serviceRouter.PaymentRouter(&cartItemService, &userService, &paymentService, &orderService)
 	serviceRouter.OrderRouter(&orderService, &categoryService)
 
-	mode := os.Getenv("MODE")
-	fmt.Printf("Starting the server on :8000... %v", mode)
+	port := os.Getenv("PORT")
 
-	if mode == "PRODUCTION" {
-		http.ListenAndServe(":0000", r)
-	} else {
-		http.ListenAndServe(":8000", r)
+	if port == "" {
+		port = "8000"
 	}
+
+	fmt.Printf("Starting the server on :%v... ", port)
+
+	http.ListenAndServe(":8000", r)
 }
