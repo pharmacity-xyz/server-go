@@ -24,4 +24,5 @@
 - [adminer](https://github.com/vrana/adminer)
 
 ### Payment
-- [Paystack](https://github.com/rpip/paystack-go)
+- [Paystack doc](https://paystack.com/docs/)
+- [Paystack in go](https://github.com/rpip/paystack-go)
