@@ -1,4 +1,4 @@
-# pharmacity-server-go
+# Server-go
 
 ## Libraries
 ### Routing
@@ -22,3 +22,6 @@
 ### Developer tool
 - [modd](https://github.com/cortesi/modd)
 - [adminer](https://github.com/vrana/adminer)
+
+### Payment
+- [Paystack](https://github.com/rpip/paystack-go)
